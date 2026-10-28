@@ -6,7 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Main/01_Scene/DeadCrowd.unity
+    guid: 07b5171045a301c4cbb5f312bb1af7c8
+  - enabled: 0
+    path: Assets/Main/01_Scene/DeadCrowdPrototype.unity
+    guid: 20b7e42eed2e36d489e999f2d7b3c930
+  - enabled: 0
+    path: Assets/Main/01_Scene/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
