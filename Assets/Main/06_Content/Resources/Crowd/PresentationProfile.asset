@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72400afaeea44ad58c5df9914f0e285a, type: 3}
+  m_Name: PresentationProfile
+  m_EditorClassIdentifier: Assembly-CSharp::DeadCrowd.Content.CrowdPresentationProfile
+  CommonVisualPrefab: {fileID: 3700048035078138113, guid: 48cf061ccd1f0d14683726491f2a9a75, type: 3}
+  Footstep: {fileID: 8300000, guid: 338553ebbc8b6f848825b7673db5bebd, type: 3}
+  Melee: {fileID: 8300000, guid: dbd698c03aa459441b48b86963eef239, type: 3}
+  Shot: {fileID: 8300000, guid: 794c53051279ee44186db50ed2fb8572, type: 3}
+  Reload: {fileID: 8300000, guid: 81029078ec27e9d4ebd8abdb5a022a72, type: 3}
+  Hit: {fileID: 8300000, guid: dbe08578b6757864c80d56137b11592c, type: 3}
+  Death: {fileID: 8300000, guid: 32d52bc80da572745aa6da6c370760b7, type: 3}
+  LocalWarning: {fileID: 8300000, guid: 8ff898dae48fbd74fa15f17f0abf7e0a, type: 3}
+  PlayLocalWarnings: 1
+  SpeedParameter: Speed
+  AimParameter: Aim
+  ActionParameter: Action
+  DeadParameter: Dead
+  HitParameter: Hit
+  MeleeState: Melee
+  ShotState: Shot
+  ReloadState: Reload
+  Volume: 0.5
+  AudioRange: 22
+  FootstepDistance: 1.2
+  BodyColor: {r: 0.38, g: 0.49, b: 0.39, a: 1}
+  HitColor: {r: 0.9, g: 0.32, b: 0.23, a: 1}
+  HitFlashSeconds: 0.15

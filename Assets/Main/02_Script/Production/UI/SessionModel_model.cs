@@ -1,7 +1,7 @@
 namespace DeadCrowd.UI
 {
     public enum SESSION_SCREEN { TITLE, CREATE, JOIN, CONNECTING, LOBBY, COUNTDOWN, PLAYING, RESULT, LOADING }
-    public enum SESSION_ACTION { SHOW_CREATE, SHOW_JOIN, BACK, DUEL, FFA, CREATE, JOIN, CANCEL, READY, START, COPY_CODE, LEAVE, RETURN_LOBBY, RESUME, SETTINGS, SAVE_SETTINGS, QUIT }
+    public enum SESSION_ACTION { SHOW_CREATE, SHOW_JOIN, BACK, DUEL, FFA, CREATE, JOIN, CANCEL, READY, START, COPY_CODE, LEAVE, RETURN_LOBBY, RESUME, SETTINGS, SAVE_SETTINGS, QUIT, SOLO }
 
     // Presentation data only. World identity and other players' health never enter this model.
     public sealed class SessionModel_model
@@ -9,6 +9,7 @@ namespace DeadCrowd.UI
         public SESSION_SCREEN Screen;
         public bool Busy;
         public bool Host;
+        public bool Practice;
         public bool Ready;
         public bool CanReady;
         public bool CanStart;

@@ -47,6 +47,10 @@ namespace DeadCrowd.UI
                 case SESSION_ACTION.BACK: MODEL.Screen = SESSION_SCREEN.TITLE; break;
                 case SESSION_ACTION.DUEL: MODEL.Capacity = 2; break;
                 case SESSION_ACTION.FFA: MODEL.Capacity = 4; break;
+                case SESSION_ACTION.SOLO:
+                    _connectionReturnScreen = SESSION_SCREEN.TITLE;
+                    _ = _session.StartPractice_async();
+                    break;
                 case SESSION_ACTION.CREATE:
                     _connectionReturnScreen = SESSION_SCREEN.CREATE;
                     _ = _session.CreateRoom_async(MODEL.Capacity);

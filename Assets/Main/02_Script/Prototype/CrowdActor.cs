@@ -18,6 +18,16 @@ namespace DeadCrowd.Prototype
         [Networked] public NetworkBool Ready { get; set; }
         [Networked] public int LoadedRoundId { get; set; }
         [Networked] public NetworkBool LoadFailed { get; set; }
+        [Networked] public int ConfirmedMagazine { get; set; }
+        [Networked] public int ConfirmedReserve { get; set; }
+        [Networked] public ACTION_STATE ConfirmedAction { get; set; }
+        [Networked] public int ConfirmedActionEndTick { get; set; }
+        public void ConfirmPresentation()
+        {
+            if (!HasStateAuthority) return;
+            ConfirmedMagazine = Magazine; ConfirmedReserve = Reserve;
+            ConfirmedAction = Action; ConfirmedActionEndTick = ActionEndTick;
+        }
         [Networked] public int Health { get; set; }
         [Networked] public float Exposure { get; set; }
         [Networked] public NetworkBool Exposed { get; set; }
@@ -25,12 +35,16 @@ namespace DeadCrowd.Prototype
         [Networked] public ACTION_STATE Action { get; set; }
         [Networked] public int ActionEndTick { get; set; }
         [Networked] public int HitTick { get; set; }
+        [Networked] public int AttackId { get; set; }
+        [Networked] public int SettledAttackId { get; set; }
         [Networked] public NetworkBool HitPending { get; set; }
         [Networked] public int Magazine { get; set; }
         [Networked] public int Reserve { get; set; }
         [Networked] public NetworkBool Aiming { get; set; }
         [Networked] public int LastAttackSequence { get; set; }
         [Networked] public int LastReloadSequence { get; set; }
+        [Networked] public int ActionSequence { get; set; }
+        [Networked] public ACTION_STATE ActionEvent { get; set; }
         [Networked] public int DamageSequence { get; set; }
         [Networked] public int ShotSequence { get; set; }
         [Networked] public Vector3 ShotEnd { get; set; }
@@ -38,6 +52,7 @@ namespace DeadCrowd.Prototype
         [Networked] public DEATH_CAUSE DeathCause { get; set; }
         [Networked] public AI_STATE AiState { get; set; }
 
+        private DeadCrowd.Content.CrowdActorPresentation _presentation;
         private CharacterController _controller;
         private NetworkTransform _networkTransform;
         private CrowdMatch _match;
@@ -58,11 +73,16 @@ namespace DeadCrowd.Prototype
         public bool DangerThisTick;
         public float ExposureAddition;
         public CrowdActor RememberedTarget;
+        // Authority-only candidate for one melee attack; never chooses the actual impact target.
+        public CrowdActor BackstabCandidate;
         public Vector3 Goal;
         public int WaitUntilTick;
         public int LastProgressTick;
         public float LastPathDistance;
         public bool WaitingAtGoal;
+        public Vector3 ProgressPosition;
+        public int RecoveryUntilTick;
+        public bool PresentationReady { get; private set; }
 
         public bool Alive => Object != null && Object.IsValid && Health > 0;
         public Vector3 Center => transform.position + Vector3.up * 0.9f;
@@ -82,6 +102,22 @@ namespace DeadCrowd.Prototype
             _match.Register(this);
             _lastDamageSequence = DamageSequence;
             _lastShotSequence = ShotSequence;
+            var profile = DeadCrowd.Content.CrowdContent.Catalog.Presentation;
+            if (profile != null && profile.CommonVisualPrefab != null)
+            {
+                try
+                {
+                    _presentation = Instantiate(profile.CommonVisualPrefab, transform);
+                    _presentation.Initialize(this, profile);
+                    PresentationReady = true;
+                }
+                catch (System.Exception exception)
+                {
+                    Debug.LogError("[Content] Character presentation failed: " + exception.Message);
+                    if (_presentation != null) Destroy(_presentation.gameObject);
+                    _presentation = null;
+                }
+            }
         }
 
         public override void Despawned(NetworkRunner runner, bool hasState)
@@ -98,6 +134,7 @@ namespace DeadCrowd.Prototype
             Health = CrowdRules.MAX_HP;
             Magazine = CrowdRules.MAGAZINE;
             Reserve = CrowdRules.RESERVE;
+            ConfirmPresentation();
         }
 
         public void ResetRound(Vector3 position, Quaternion rotation)
@@ -110,25 +147,32 @@ namespace DeadCrowd.Prototype
             Aiming = false;
             Magazine = CrowdRules.MAGAZINE;
             Reserve = CrowdRules.RESERVE;
+            ConfirmPresentation();
             DeathTick = 0;
             DeathCause = DEATH_CAUSE.NONE;
             Ready = false;
             LoadedRoundId = -1;
             LoadFailed = false;
             RememberedTarget = null;
+            BackstabCandidate = null;
             AiState = AI_STATE.IDLE;
             WaitingAtGoal = false;
             WaitUntilTick = 0;
+            RecoveryUntilTick = 0;
+            ProgressPosition = position;
             _corners = null;
             _controller.enabled = false;
             _networkTransform.Teleport(position, rotation);
             transform.SetPositionAndRotation(position, rotation);
             _controller.enabled = true;
+            if (_presentation != null) _presentation.ResetPresentation();
         }
 
         public void Move(Vector3 direction, float speed, float turnSpeed, Vector3 facing, float deltaTime)
         {
             if (!Alive) return;
+            // Rebind the native controller to the Transform restored by NetworkTransform on rollback.
+            _controller.enabled = false;
             _controller.enabled = true;
             if (facing.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(facing), turnSpeed * deltaTime);
             _controller.Move((Vector3.ClampMagnitude(direction, 1f) * speed + Vector3.down * 2f) * deltaTime);
@@ -138,7 +182,7 @@ namespace DeadCrowd.Prototype
         {
             if (_corners == null || tick >= _pathTick || (goal - _pathGoal).sqrMagnitude > 1f)
             {
-                _pathTick = tick + CrowdRules.Ticks(0.25f, Runner.DeltaTime);
+                _pathTick = tick + CrowdRules.Ticks(CrowdRules.PATH_REFRESH_SECONDS, Runner.DeltaTime);
                 _pathGoal = goal;
                 if (!NavMesh.CalculatePath(transform.position, goal, NavMesh.AllAreas, _path) || _path.status == NavMeshPathStatus.PathInvalid)
                 {
@@ -179,7 +223,7 @@ namespace DeadCrowd.Prototype
         {
             if (!Connected || IsNpc || _match.RoundId != roundId || _match.State != ROUND_STATE.LOADING) return;
             if (LoadedRoundId == roundId || LoadFailed) return;
-            LoadFailed = !success || version != CrowdRules.BUILD_VERSION;
+            LoadFailed = !success || version != DeadCrowd.Content.CrowdContent.SessionVersion;
             if (!LoadFailed) LoadedRoundId = roundId;
             Debug.Log($"[Crowd] Load response round={roundId}, slot={Slot}, success={!LoadFailed}");
         }
@@ -194,11 +238,12 @@ namespace DeadCrowd.Prototype
         {
             bool alive = Health > 0;
             _controller.enabled = alive;
-            bool visible = alive || Runner.Tick.Raw - DeathTick < CrowdRules.Ticks(20f, Runner.DeltaTime);
-            _bodyTrans.gameObject.SetActive(visible);
+            bool visible = alive || Runner.Tick.Raw - DeathTick < CrowdRules.Ticks(CrowdRules.CORPSE_SECONDS, Runner.DeltaTime);
+            _bodyTrans.gameObject.SetActive(visible && _presentation == null);
+            if (_presentation != null) _presentation.gameObject.SetActive(visible);
             _bodyTrans.localRotation = alive ? Quaternion.identity : Quaternion.Euler(0f, 0f, 90f);
             _bodyTrans.localPosition = alive ? Vector3.up * 0.9f : Vector3.up * 0.3f;
-            _weaponObj.SetActive(alive && (Aiming || Action != ACTION_STATE.NONE));
+            _weaponObj.SetActive(_presentation == null && alive && (Aiming || Action != ACTION_STATE.NONE));
             _weaponObj.transform.localRotation = Action == ACTION_STATE.MELEE ? Quaternion.Euler(0f, Mathf.Sin((ActionEndTick - Runner.Tick.Raw) * 0.3f) * 70f, 0f) : Quaternion.identity;
             if (_lastDamageSequence != DamageSequence)
             {

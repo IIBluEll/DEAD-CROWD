@@ -202,6 +202,74 @@ namespace DeadCrowd.Prototype.Editor
             return material;
         }
 
+        [MenuItem("DEAD CROWD/Development/Verify Backstab Rules")]
+        public static void VerifyBackstabRules()
+        {
+            int checks = 0;
+            void Check(bool condition, string label) { if (!condition) throw new Exception("[Crowd] Backstab verification failed: " + label); checks++; }
+            float boundary = 180f - CrowdRules.BACK_HALF_ANGLE;
+            foreach (float sign in new[] { -1f, 1f })
+            {
+                Vector3 edge = Quaternion.Euler(0f, sign * boundary, 0f) * Vector3.forward;
+                Check(CrowdRules.IsBackstab(Vector3.forward, edge), "both rear boundaries included");
+                Check(CrowdRules.IsBackstab(Vector3.forward, edge + Vector3.up * 3f), "height ignored for rear angle");
+                if (boundary > 0.1f) Check(!CrowdRules.IsBackstab(Vector3.forward, Quaternion.Euler(0f, sign * (boundary - 0.1f), 0f) * Vector3.forward), "outside boundary excluded");
+            }
+            Check(CrowdRules.IsBackstab(Vector3.forward, Vector3.back), "directly behind");
+            Check(!CrowdRules.IsBackstab(Vector3.forward, Vector3.zero), "coincident positions are not a rear opening");
+            Check(CrowdRules.IsMeleeBackstab(Vector3.forward, Vector3.back, false), "rear at impact works without opening");
+            if (CrowdRules.BACK_HALF_ANGLE < 180f)
+            {
+                Check(!CrowdRules.IsMeleeBackstab(Vector3.forward, Vector3.forward, false), "front hit or different target receives normal damage");
+                Check(CrowdRules.IsMeleeBackstab(Vector3.back, Vector3.back, true) == CrowdRules.BACKSTAB_WINDUP_GRACE, "same opening target turned around during windup");
+            }
+            Debug.Log($"[Development] PASS: {checks} backstab rule checks, halfAngle={CrowdRules.BACK_HALF_ANGLE}, windupGrace={CrowdRules.BACKSTAB_WINDUP_GRACE}. Not a Play Mode test.");
+        }
+
+        [MenuItem("DEAD CROWD/Development/Verify Exposure Recovery Rules")]
+        public static void VerifyExposureRecoveryRules()
+        {
+            int checks = 0;
+            void Check(bool condition, string label) { if (!condition) throw new Exception("[Crowd] Exposure recovery verification failed: " + label); checks++; }
+            foreach (float deltaTime in new[] { 1f / 60f, 1f / 30f })
+            {
+                int hiddenDelay = CrowdRules.Ticks(CrowdRules.EXP_HIDDEN_DELAY, deltaTime);
+                int exposedDelay = CrowdRules.Ticks(CrowdRules.EXP_DELAY, deltaTime);
+                Check(!CrowdRules.CanDecayExposure(false, hiddenDelay - 1, deltaTime), "hidden delay before boundary");
+                Check(CrowdRules.CanDecayExposure(false, hiddenDelay, deltaTime), "hidden delay boundary included");
+                Check(!CrowdRules.CanDecayExposure(true, exposedDelay - 1, deltaTime), "exposed delay before boundary");
+                Check(CrowdRules.CanDecayExposure(true, exposedDelay, deltaTime), "exposed delay boundary included");
+
+                float exposure = 60f;
+                bool exposed = false;
+                for (int tick = 0; tick < hiddenDelay; tick++)
+                    CrowdRules.UpdateExposure(ref exposure, ref exposed, false, CrowdRules.CanDecayExposure(exposed, tick, deltaTime), 0f, deltaTime);
+                Check(exposure == 60f && !exposed, "partial exposure remains unchanged throughout hidden wait");
+                CrowdRules.UpdateExposure(ref exposure, ref exposed, false, CrowdRules.CanDecayExposure(exposed, hiddenDelay, deltaTime), 0f, deltaTime);
+                Check(CrowdRules.EXP_DECAY == 0f ? exposure == 60f : exposure < 60f, "partial exposure starts falling at hidden boundary");
+
+                exposure = 95f;
+                CrowdRules.UpdateExposure(ref exposure, ref exposed, true, true, 10f, deltaTime);
+                Check(exposure == 100f && exposed, "attack reaching 100 enters exposed state without simultaneous decay");
+                CrowdRules.UpdateExposure(ref exposure, ref exposed, false, CrowdRules.CanDecayExposure(exposed, exposedDelay - 1, deltaTime), 0f, deltaTime);
+                Check(exposure == 100f && exposed, "newly exposed player keeps original wait");
+                exposure = 99f;
+                CrowdRules.UpdateExposure(ref exposure, ref exposed, false, CrowdRules.CanDecayExposure(exposed, exposedDelay, deltaTime), 0f, deltaTime);
+                Check(CrowdRules.EXP_DECAY == 0f ? exposure == 99f : exposure < 99f, "below 100 still uses exposed wait while revealed");
+                Check(exposed == (exposure > 0f), "revealed state persists until zero");
+                if (CrowdRules.EXP_DECAY > 0f)
+                {
+                    CrowdRules.UpdateExposure(ref exposure, ref exposed, false, true, 0f, (exposure + 1f) / CrowdRules.EXP_DECAY);
+                    Check(exposure == 0f && !exposed, "zero restores hidden state");
+                }
+                exposure = 50f;
+                exposed = false;
+                CrowdRules.UpdateExposure(ref exposure, ref exposed, true, true, 10f, deltaTime);
+                Check(exposure == 60f && !exposed, "new danger prevents decay on an otherwise eligible tick");
+            }
+            Debug.Log($"[Development] PASS: {checks} exposure recovery rule checks at 60/30 Hz, hiddenDelay={CrowdRules.EXP_HIDDEN_DELAY}, exposedDelay={CrowdRules.EXP_DELAY}, decay={CrowdRules.EXP_DECAY}. Not a Play Mode test.");
+        }
+
         [MenuItem("DEAD CROWD/Prototype/Verify Rules and Scene")]
         public static void Verify()
         {
@@ -211,8 +279,9 @@ namespace DeadCrowd.Prototype.Editor
             Check(CrowdRules.Ticks(0.85f, 1f / 60f) == 51, "melee cycle 51 ticks");
             Check(CrowdRules.WithinCone(Vector3.forward, Quaternion.Euler(0f, 45f, 0f) * Vector3.forward, 45f), "front angle boundary included");
             Check(!CrowdRules.WithinCone(Vector3.forward, Quaternion.Euler(0f, 45.1f, 0f) * Vector3.forward, 45f), "outside front angle excluded");
-            Check(CrowdRules.IsBackstab(Vector3.forward, Quaternion.Euler(0f, 130f, 0f) * Vector3.forward), "130 degree back boundary");
-            Check(!CrowdRules.IsBackstab(Vector3.forward, Quaternion.Euler(0f, 129.9f, 0f) * Vector3.forward), "129.9 degrees normal");
+            float backBoundary = 180f - CrowdRules.BACK_HALF_ANGLE;
+            Check(CrowdRules.IsBackstab(Vector3.forward, Quaternion.Euler(0f, backBoundary, 0f) * Vector3.forward), "back boundary included");
+            if (backBoundary > 0.1f) Check(!CrowdRules.IsBackstab(Vector3.forward, Quaternion.Euler(0f, backBoundary - 0.1f, 0f) * Vector3.forward), "outside back boundary excluded");
             float exposure = 0f;
             bool exposed = false;
             for (int i = 0; i < 3; i++) CrowdRules.UpdateExposure(ref exposure, ref exposed, true, false, 35f, 1f / 60f);

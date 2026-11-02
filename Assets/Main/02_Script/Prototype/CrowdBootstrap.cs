@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Fusion;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using DeadCrowd.Control;
 using DeadCrowd.Session;
 
 namespace DeadCrowd.Prototype
@@ -12,18 +12,14 @@ namespace DeadCrowd.Prototype
         [SerializeField] private Camera _viewCamera;
         [SerializeField] private bool _showPrototypeGui = true;
         private CrowdConnectionService _connection;
+        private readonly CrowdLocalInput _controls = new CrowdLocalInput();
+        private readonly CrowdCameraController CAMERA = new CrowdCameraController();
         private NetworkRunner _observedRunner;
-        private CrowdInput _input;
         private string _code = "";
         private int _capacity = 2;
         private int _roundId = -1;
-        private int _spectatorIndex;
-        private bool _menu;
         private bool _primary;
         private bool _captureMode;
-        private float _yaw;
-        private float _pitch = 12f;
-        private float _sensitivity = 0.12f;
         private GUIStyle _titleStyle;
         private GUIStyle _labelStyle;
         private GUIStyle _smallStyle;
@@ -34,19 +30,19 @@ namespace DeadCrowd.Prototype
         public string Status => _connection?.Status ?? "";
         public bool Busy => _connection != null && _connection.Busy;
         public string InviteCode => _connection?.InviteCode ?? "";
-        public bool MenuOpen => _menu;
-        public bool LocalAim => _input.Aim;
-        public float MouseSensitivity => _sensitivity;
-        public float AimYaw => _yaw;
+        public bool MenuOpen => _controls.MenuOpen;
+        public bool LocalAim => _controls.Aiming;
+        public float MouseSensitivity => _controls.Sensitivity;
+        public float AimYaw => _controls.Yaw;
 
         public void UseCanvasUI() { _showPrototypeGui = false; }
-        public void SetMenuOpen(bool open) { _menu = open; }
+        public void SetMenuOpen(bool open) { _controls.MenuOpen = open; }
         public void CancelConnection() { _connection.CancelConnection(); }
         public void SaveSettings(float sensitivity, float volume)
         {
-            _sensitivity = Mathf.Clamp(sensitivity, 0.03f, 0.4f);
+            _controls.Sensitivity = Mathf.Clamp(sensitivity, 0.03f, 0.4f);
             AudioListener.volume = Mathf.Clamp01(volume);
-            PlayerPrefs.SetFloat("Crowd.MouseSensitivity", _sensitivity);
+            PlayerPrefs.SetFloat("Crowd.MouseSensitivity", _controls.Sensitivity);
             PlayerPrefs.SetFloat("Crowd.Volume", AudioListener.volume);
             PlayerPrefs.Save();
         }
@@ -63,7 +59,7 @@ namespace DeadCrowd.Prototype
             DontDestroyOnLoad(gameObject);
             Application.runInBackground = true;
             Application.targetFrameRate = 60;
-            _sensitivity = PlayerPrefs.GetFloat("Crowd.MouseSensitivity", 0.12f);
+            _controls.Sensitivity = PlayerPrefs.GetFloat("Crowd.MouseSensitivity", 0.12f);
             AudioListener.volume = PlayerPrefs.GetFloat("Crowd.Volume", 0.8f);
         }
 
@@ -71,91 +67,29 @@ namespace DeadCrowd.Prototype
         {
             if (!_primary) return;
             _connection.Tick();
-            if (_observedRunner != Runner)
+            if (!ReferenceEquals(_observedRunner, Runner))
             {
                 _observedRunner = Runner;
-                _input = default;
+                _controls.Reset();
                 _roundId = -1;
-                _menu = false;
+                _controls.MenuOpen = false;
             }
             CrowdMatch match = Match;
             CrowdActor local = match != null ? match.LocalActor() : null;
             if (match != null && local != null && match.RoundId != _roundId)
             {
                 _roundId = match.RoundId;
-                _yaw = local.transform.eulerAngles.y;
-                _pitch = 12f;
-                _menu = false;
+                _controls.Reset(local);
             }
-            Keyboard keyboard = Keyboard.current;
-            Mouse mouse = Mouse.current;
-            bool playing = match != null && match.State == ROUND_STATE.PLAYING;
-            bool countdown = match != null && match.State == ROUND_STATE.COUNTDOWN;
-            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame && (playing || countdown)) _menu = !_menu;
-            bool looking = (playing || countdown) && !_menu && Application.isFocused && !Application.isBatchMode;
-            Cursor.lockState = looking ? CursorLockMode.Locked : CursorLockMode.None;
-            Cursor.visible = !looking;
-            if (looking && mouse != null)
-            {
-                Vector2 delta = mouse.delta.ReadValue();
-                _yaw = Mathf.Repeat(_yaw + delta.x * _sensitivity, 360f);
-                _pitch = Mathf.Clamp(_pitch - delta.y * _sensitivity, -60f, 30f);
-            }
-            _input.Move = Vector2.zero;
-            _input.Aim = false;
-            _input.Sprint = false;
-            _input.Yaw = _yaw;
-            _input.Pitch = _pitch;
-            if (local != null && local.Alive && playing && looking && keyboard != null && mouse != null)
-            {
-                _input.Move = new Vector2((keyboard.dKey.isPressed ? 1 : 0) - (keyboard.aKey.isPressed ? 1 : 0), (keyboard.wKey.isPressed ? 1 : 0) - (keyboard.sKey.isPressed ? 1 : 0));
-                _input.Aim = mouse.rightButton.isPressed;
-                _input.Sprint = keyboard.leftShiftKey.isPressed;
-                if (mouse.leftButton.wasPressedThisFrame) _input.AttackSequence++;
-                if (keyboard.rKey.wasPressedThisFrame) _input.ReloadSequence++;
-            }
-            if (local != null && !local.Alive && playing && !_menu && keyboard != null)
-            {
-                if (keyboard.aKey.wasPressedThisFrame) _spectatorIndex--;
-                if (keyboard.dKey.wasPressedThisFrame) _spectatorIndex++;
-            }
+            _controls.Poll(match, local);
         }
 
-        private void LateUpdate()
-        {
-            if (!_primary || _viewCamera == null) return;
-            CrowdMatch match = Match;
-            if (match == null) return;
-            CrowdActor target = match.LocalActor();
-            if (target == null) return;
-            if (!target.Alive)
-            {
-                var survivors = new List<CrowdActor>();
-                foreach (CrowdActor actor in match.Actors) if (!actor.IsNpc && actor.Connected && actor.Alive) survivors.Add(actor);
-                if (survivors.Count == 0) return;
-                _spectatorIndex = (_spectatorIndex % survivors.Count + survivors.Count) % survivors.Count;
-                target = survivors[_spectatorIndex];
-            }
-            Quaternion rotation = Quaternion.Euler(_pitch, _yaw, 0f);
-            Vector3 pivot = target.transform.position + Vector3.up * 1.5f;
-            bool aim = _input.Aim && target.Alive;
-            float distance = aim ? 2.2f : 3.5f;
-            Vector3 offset = rotation * new Vector3(0.45f, 0f, -distance);
-            Vector3 position = pivot + offset;
-            if (Physics.SphereCast(pivot, 0.2f, offset.normalized, out RaycastHit hit, offset.magnitude, CrowdRules.WORLD_MASK)) position = pivot + offset.normalized * Mathf.Max(0.05f, hit.distance - 0.05f);
-            _viewCamera.transform.SetPositionAndRotation(position, rotation);
-            _viewCamera.fieldOfView = Mathf.MoveTowards(_viewCamera.fieldOfView, aim ? 60f : 70f, Time.deltaTime * 70f);
-        }
+        private void LateUpdate() { if (_primary) CAMERA.Follow(_viewCamera, Match, _controls); }
 
         public Task Connect_async(GameMode mode, string codeOverride = null, int capacity = 2) => _connection.Connect_async(mode, codeOverride ?? (mode == GameMode.Client ? _code : null), capacity);
         public Task Leave_async(string message = "You left the room.") => _connection.Leave_async(message);
-        public void OverrideTestInput(CrowdInput input) { _input = input; _yaw = input.Yaw; _pitch = input.Pitch; }
-
-        private CrowdInput ReadInput()
-        {
-            _input.RoundId = Match != null ? Match.RoundId : -1;
-            return _input;
-        }
+        public void OverrideTestInput(CrowdInput input) { _controls.Override(input); }
+        private CrowdInput ReadInput() => _controls.Read(Match != null ? Match.RoundId : -1);
 
         private void OnGUI()
         {
@@ -237,9 +171,9 @@ namespace DeadCrowd.Prototype
             GUILayout.EndArea();
             GUI.Label(new Rect(20, 660, 900, 50), "WASD move   SHIFT sprint   LMB melee   RMB aim + LMB fire   R reload   ESC menu", _smallStyle);
             if (local != null && !local.Alive) GUI.Label(new Rect(400, 580, 600, 60), $"SPECTATING  |  Cause: {local.DeathCause}\nA / D switch survivor", _labelStyle);
-            if (local != null && local.Alive && _input.Aim)
+            if (local != null && local.Alive && _controls.Aiming)
             {
-                float angle = Vector3.Angle(local.transform.forward, Quaternion.Euler(0f, _yaw, 0f) * Vector3.forward);
+                float angle = Vector3.Angle(local.transform.forward, Quaternion.Euler(0f, _controls.Yaw, 0f) * Vector3.forward);
                 string crosshair = local.Action == ACTION_STATE.RELOAD ? "RELOADING" : local.Magazine == 0 ? "EMPTY" : angle > CrowdRules.AIM_TOLERANCE ? "ALIGNING" : "+";
                 GUI.Label(new Rect(590, 350, 200, 45), crosshair, _labelStyle);
             }
@@ -253,15 +187,15 @@ namespace DeadCrowd.Prototype
                 if (GUILayout.Button(Runner.IsServer ? "CLOSE ROOM" : "LEAVE ROOM")) _ = Leave_async();
                 GUILayout.EndArea();
             }
-            if (_menu && match.State != ROUND_STATE.RESULT)
+            if (_controls.MenuOpen && match.State != ROUND_STATE.RESULT)
             {
                 DrawPanel(new Rect(430, 230, 420, 280));
                 GUILayout.Label("MENU", _titleStyle);
                 GUILayout.Label("The online match keeps running.", _smallStyle);
-                GUILayout.Label($"Mouse sensitivity {_sensitivity:0.00}", _smallStyle);
-                _sensitivity = GUILayout.HorizontalSlider(_sensitivity, 0.03f, 0.4f);
+                GUILayout.Label($"Mouse sensitivity {_controls.Sensitivity:0.00}", _smallStyle);
+                _controls.Sensitivity = GUILayout.HorizontalSlider(_controls.Sensitivity, 0.03f, 0.4f);
                 AudioListener.volume = GUILayout.HorizontalSlider(AudioListener.volume, 0f, 1f);
-                if (GUILayout.Button("RESUME")) { _menu = false; PlayerPrefs.SetFloat("Crowd.MouseSensitivity", _sensitivity); PlayerPrefs.SetFloat("Crowd.Volume", AudioListener.volume); }
+                if (GUILayout.Button("RESUME")) { _controls.MenuOpen = false; PlayerPrefs.SetFloat("Crowd.MouseSensitivity", _controls.Sensitivity); PlayerPrefs.SetFloat("Crowd.Volume", AudioListener.volume); }
                 if (GUILayout.Button(Runner.IsServer ? "CLOSE ROOM FOR EVERYONE" : "LEAVE AND FORFEIT")) _ = Leave_async();
                 GUILayout.EndArea();
             }

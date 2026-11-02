@@ -58,11 +58,13 @@ namespace DeadCrowd.Session
                 return Task.CompletedTask;
             }
             if (mode != GameMode.Single && capacity != 2 && capacity != 4) { Status = "Choose a 2-player or 4-player room."; return Task.CompletedTask; }
+            try { DeadCrowd.Content.CrowdContent.Freeze(); }
+            catch (Exception exception) { Status = "Invalid game content. Check settings and map assets."; Debug.LogException(exception); return Task.CompletedTask; }
             State = CONNECTION_STATE.CONNECTING;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             TestSuccessfulStartReceived = false;
 #endif
-            Status = "Connecting to the room...";
+            Status = mode == GameMode.Single ? "Preparing offline practice..." : "Connecting to the room...";
             _confirmedResult = "";
             _initialLoadComplete = false;
             _sceneIndex = SceneManager.GetActiveScene().buildIndex;
@@ -100,7 +102,7 @@ namespace DeadCrowd.Session
                     {
                         GameMode = mode, SessionName = code, PlayerCount = mode == GameMode.Single ? 1 : capacity,
                         IsVisible = false, IsOpen = true, EnableClientSessionCreation = false,
-                        ConnectionToken = Encoding.UTF8.GetBytes(CrowdRules.BUILD_VERSION), CustomPhotonAppSettings = settings,
+                        ConnectionToken = Encoding.UTF8.GetBytes(DeadCrowd.Content.CrowdContent.SessionVersion), CustomPhotonAppSettings = settings,
                         Scene = sceneInfo, SceneManager = sceneManager, ObjectProvider = provider, StartGameCancellationToken = _cancellation.Token
                     });
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -121,7 +123,7 @@ namespace DeadCrowd.Session
                         connected = true;
                         State = CONNECTION_STATE.CONNECTED;
                         _initialLoadDeadline = Time.realtimeSinceStartup + CrowdRules.LOAD_TIMEOUT_SECONDS;
-                        Status = "The host can start when everyone is ready.";
+                        Status = mode == GameMode.Single ? "Offline practice ready." : "The host can start when everyone is ready.";
                         Debug.Log($"[Crowd] Connected mode={mode}, room={code}, attempt={attempt}");
                         return;
                     }
@@ -246,8 +248,9 @@ namespace DeadCrowd.Session
             if (!_sceneReady || local == null || local.LoadedRoundId == match.RoundId || Time.unscaledTime < _nextLoadReport) return;
             if (match.ConnectedCount() != match.RequiredPlayers || match.NpcCount() != match.ExpectedNpcCount) return;
             _nextLoadReport = Time.unscaledTime + 0.5f;
-            bool mapReady = NavMesh.SamplePosition(local.transform.position, out _, 1f, NavMesh.AllAreas);
-            local.RPC_ReportLoaded(match.RoundId, CrowdRules.BUILD_VERSION, mapReady);
+            bool mapReady = local.PresentationReady && NavMesh.SamplePosition(local.transform.position, out _, 1f, NavMesh.AllAreas);
+            foreach (CrowdActor actor in match.Actors) if (!actor.PresentationReady) mapReady = false;
+            local.RPC_ReportLoaded(match.RoundId, DeadCrowd.Content.CrowdContent.SessionVersion, mapReady);
         }
 
         public void Dispose()
@@ -305,7 +308,7 @@ namespace DeadCrowd.Session
         public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { SessionEnded(runner, reason.ToString()); }
         public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)
         {
-            if (runner == _runner && (Match == null || Match.State == ROUND_STATE.LOBBY) && Encoding.UTF8.GetString(token ?? Array.Empty<byte>()) == CrowdRules.BUILD_VERSION) request.Accept();
+            if (runner == _runner && (Match == null || Match.State == ROUND_STATE.LOBBY) && Encoding.UTF8.GetString(token ?? Array.Empty<byte>()) == DeadCrowd.Content.CrowdContent.SessionVersion) request.Accept();
             else request.Refuse();
         }
         public void OnSceneLoadStart(NetworkRunner runner) { if (runner == _runner) _sceneReady = false; }

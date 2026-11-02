@@ -74,7 +74,7 @@ namespace DeadCrowd.UI
             _settingsObj.SetActive(model.SettingsOpen);
             _texts[(int)SESSION_TEXT.STATUS].gameObject.SetActive(!gameplay && model.Screen != SESSION_SCREEN.RESULT);
             SetText(SESSION_TEXT.STATUS, model.Status);
-            SetText(SESSION_TEXT.CODE, "Invite Code  " + model.Code);
+            SetText(SESSION_TEXT.CODE, model.Practice ? "Solo Practice - Offline" : "Invite Code  " + model.Code);
             SetText(SESSION_TEXT.SLOTS, model.Slots);
             SetText(SESSION_TEXT.COUNTDOWN, model.Countdown + "\nLook around");
             SetText(SESSION_TEXT.HEALTH, model.Health);
@@ -84,7 +84,7 @@ namespace DeadCrowd.UI
             SetText(SESSION_TEXT.CROSSHAIR, model.Crosshair);
             SetText(SESSION_TEXT.SPECTATOR, model.Spectator);
             SetText(SESSION_TEXT.RESULT, model.Result);
-            SetText(SESSION_TEXT.HOST_NOTICE, model.Screen == SESSION_SCREEN.LOADING ? "Loading round. Waiting for all players..." : model.Host ? "Everyone must be ready before starting." : "Waiting for the host to start.");
+            SetText(SESSION_TEXT.HOST_NOTICE, model.Practice ? "Preparing practice. No other players required." : model.Screen == SESSION_SCREEN.LOADING ? "Loading round. Waiting for all players..." : model.Host ? "Everyone must be ready before starting." : "Waiting for the host to start.");
             _texts[(int)SESSION_TEXT.CROSSHAIR].gameObject.SetActive(model.ShowCrosshair);
             _healthImg.fillAmount = model.HealthRatio;
             _exposureImg.fillAmount = model.ExposureRatio;
@@ -93,6 +93,7 @@ namespace DeadCrowd.UI
             _exposureImg.color = model.Exposed ? new Color(1f, 0.32f, 0.21f) : new Color(0.83f, 0.71f, 0.35f);
             foreach (SessionActionBinding binding in _bindings)
             {
+                if (binding.Action == SESSION_ACTION.READY || binding.Action == SESSION_ACTION.COPY_CODE) binding.TargetBtn.gameObject.SetActive(!model.Practice);
                 bool interactable = !model.Busy;
                 if (binding.Action == SESSION_ACTION.CANCEL) interactable = model.Busy;
                 if (binding.Action == SESSION_ACTION.READY) interactable = model.CanReady;
@@ -102,7 +103,9 @@ namespace DeadCrowd.UI
                 if (binding.Action == SESSION_ACTION.DUEL || binding.Action == SESSION_ACTION.FFA)
                     binding.TargetBtn.GetComponent<Image>().color = model.Capacity == (binding.Action == SESSION_ACTION.DUEL ? 2 : 4) ? new Color(0.13f, 0.39f, 0.37f) : new Color(0.12f, 0.16f, 0.19f);
                 if (binding.Action == SESSION_ACTION.READY) binding.TargetBtn.GetComponentInChildren<TMP_Text>().text = model.Ready ? "Cancel Ready" : "Ready";
-                if (binding.Action == SESSION_ACTION.LEAVE) binding.TargetBtn.GetComponentInChildren<TMP_Text>().text = model.Host ? "Close Room" : "Leave Room";
+                if (binding.Action == SESSION_ACTION.START) binding.TargetBtn.GetComponentInChildren<TMP_Text>().text = model.Practice ? "Start Practice" : "Start Match (Host)";
+                if (binding.Action == SESSION_ACTION.LEAVE) binding.TargetBtn.GetComponentInChildren<TMP_Text>().text = model.Practice ? "Back to Title" : model.Host ? "Close Room" : "Leave Room";
+                if (binding.Action == SESSION_ACTION.RETURN_LOBBY) binding.TargetBtn.GetComponentInChildren<TMP_Text>().text = model.Practice ? "Play Again" : "Return to Lobby (Host)";
             }
         }
 

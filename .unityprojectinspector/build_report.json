@@ -4,15 +4,15 @@
     "unityVersion": "6000.3.20f1",
     "assetSizeDefinition": "Unity BuildReport PackedAssetInfo.packedSize",
     "build": {
-        "buildGuid": "6fa2dccf45be4e66b4294bd3916da533",
+        "buildGuid": "b57c226d3c1f4371b0f5c0cfd380ba52",
         "platform": "StandaloneWindows64",
         "result": "Succeeded",
         "outputPath": "D:/Fork/DEAD-CROWD/Build/Dead Crowd.exe",
-        "buildStartedAtUtc": "2026-10-28T06:30:30.5404885Z",
-        "buildEndedAtUtc": "2026-10-28T06:31:03.9235613Z",
-        "reportGeneratedAtUtc": "2026-10-28T06:31:04.1689914Z",
-        "buildTimeSeconds": 33.3830728,
-        "reportedOutputSizeBytes": 110676888,
+        "buildStartedAtUtc": "2026-11-02T04:10:39.9920781Z",
+        "buildEndedAtUtc": "2026-11-02T04:11:06.6734018Z",
+        "reportGeneratedAtUtc": "2026-11-02T04:11:06.9292753Z",
+        "buildTimeSeconds": 26.6813237,
+        "reportedOutputSizeBytes": 110902584,
         "artifactSizeBytes": 667136,
         "artifactSizeSource": "File",
         "warningCount": 4,
@@ -340,6 +340,12 @@
             "packedSizeBytes": 16256
         },
         {
+            "name": "Built-in Mesh: Combined Mesh (root: scene)",
+            "path": "Built-in Mesh: Combined Mesh (root: scene)",
+            "type": "Mesh",
+            "packedSizeBytes": 15360
+        },
+        {
             "name": "SimulationView.prefab",
             "path": "Assets/Photon/Fusion/Runtime/Statistics/Prefabs/Pages/SimulationView.prefab",
             "type": "Prefab",
@@ -350,6 +356,12 @@
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/SubpixelMorphologicalAntialiasing.shader",
             "type": "Shader",
             "packedSizeBytes": 13648
+        },
+        {
+            "name": "MainCityNavMesh.asset",
+            "path": "Assets/Main/06_Content/MainCityNavMesh.asset",
+            "type": "Other",
+            "packedSizeBytes": 12668
         },
         {
             "name": "RadialChartIcon.png",
@@ -406,6 +418,12 @@
             "packedSizeBytes": 7759
         },
         {
+            "name": "CommonCitizen.prefab",
+            "path": "Assets/Main/07_Polish/CommonCitizen.prefab",
+            "type": "Prefab",
+            "packedSizeBytes": 7321
+        },
+        {
             "name": "NOStats.prefab",
             "path": "Assets/Photon/Fusion/Runtime/Statistics/Prefabs/IndividualElements/NOStats.prefab",
             "type": "Prefab",
@@ -448,12 +466,6 @@
             "packedSizeBytes": 6124
         },
         {
-            "name": "DeadCrowdPrototypeNavMesh.asset",
-            "path": "Assets/Main/01_Scene/DeadCrowdPrototypeNavMesh.asset",
-            "type": "Other",
-            "packedSizeBytes": 5816
-        },
-        {
             "name": "CoreCopy.shader",
             "path": "Packages/com.unity.render-pipelines.core/Shaders/CoreCopy.shader",
             "type": "Shader",
@@ -476,6 +488,12 @@
             "path": "Assets/Photon/Fusion/Runtime/Statistics/ShaderAndMaterial/FusionChartShader.shader",
             "type": "Shader",
             "packedSizeBytes": 5172
+        },
+        {
+            "name": "Reload.wav",
+            "path": "Assets/Main/07_Polish/Audio/Reload.wav",
+            "type": "Audio",
+            "packedSizeBytes": 5020
         },
         {
             "name": "CopyDepth.shader",
@@ -538,10 +556,46 @@
             "packedSizeBytes": 4132
         },
         {
+            "name": "CommonCharacter.prefab",
+            "path": "Assets/Main/06_Content/CommonCharacter.prefab",
+            "type": "Prefab",
+            "packedSizeBytes": 4028
+        },
+        {
+            "name": "AimRun.anim",
+            "path": "Assets/Main/07_Polish/Animation/AimRun.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3864
+        },
+        {
+            "name": "AimWalk.anim",
+            "path": "Assets/Main/07_Polish/Animation/AimWalk.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3864
+        },
+        {
+            "name": "Run.anim",
+            "path": "Assets/Main/07_Polish/Animation/Run.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3860
+        },
+        {
+            "name": "Walk.anim",
+            "path": "Assets/Main/07_Polish/Animation/Walk.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3860
+        },
+        {
             "name": "CameraMotionVectors.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/CameraMotionVectors.shader",
             "type": "Shader",
             "packedSizeBytes": 3832
+        },
+        {
+            "name": "CommonCharacter.controller",
+            "path": "Assets/Main/06_Content/Animation/CommonCharacter.controller",
+            "type": "Animation",
+            "packedSizeBytes": 3764
         },
         {
             "name": "Sampling.shader",
@@ -562,10 +616,34 @@
             "packedSizeBytes": 3608
         },
         {
+            "name": "AimRun.anim",
+            "path": "Assets/Main/06_Content/Animation/AimRun.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3572
+        },
+        {
+            "name": "AimWalk.anim",
+            "path": "Assets/Main/06_Content/Animation/AimWalk.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3572
+        },
+        {
             "name": "FallbackError.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/Utils/FallbackError.shader",
             "type": "Shader",
             "packedSizeBytes": 3572
+        },
+        {
+            "name": "Run.anim",
+            "path": "Assets/Main/06_Content/Animation/Run.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3568
+        },
+        {
+            "name": "Walk.anim",
+            "path": "Assets/Main/06_Content/Animation/Walk.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3568
         },
         {
             "name": "NetObjectView.prefab",
@@ -586,6 +664,30 @@
             "packedSizeBytes": 3448
         },
         {
+            "name": "AimIdle.anim",
+            "path": "Assets/Main/07_Polish/Animation/AimIdle.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3408
+        },
+        {
+            "name": "Melee.anim",
+            "path": "Assets/Main/07_Polish/Animation/Melee.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3408
+        },
+        {
+            "name": "Idle.anim",
+            "path": "Assets/Main/07_Polish/Animation/Idle.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3404
+        },
+        {
+            "name": "Collapse.wav",
+            "path": "Assets/Main/07_Polish/Audio/Collapse.wav",
+            "type": "Audio",
+            "packedSizeBytes": 3356
+        },
+        {
             "name": "LiberationSans SDF - Fallback.asset",
             "path": "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset",
             "type": "Font",
@@ -604,10 +706,52 @@
             "packedSizeBytes": 3236
         },
         {
+            "name": "Melee.anim",
+            "path": "Assets/Main/06_Content/Animation/Melee.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3116
+        },
+        {
+            "name": "Reload.anim",
+            "path": "Assets/Main/06_Content/Animation/Reload.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3116
+        },
+        {
+            "name": "Reload.anim",
+            "path": "Assets/Main/07_Polish/Animation/Reload.anim",
+            "type": "Animation",
+            "packedSizeBytes": 3116
+        },
+        {
             "name": "PerformanceTestRunInfo.json",
             "path": "Assets/Resources/PerformanceTestRunInfo.json",
             "type": "Data",
             "packedSizeBytes": 3012
+        },
+        {
+            "name": "Death.anim",
+            "path": "Assets/Main/06_Content/Animation/Death.anim",
+            "type": "Animation",
+            "packedSizeBytes": 2988
+        },
+        {
+            "name": "Death.anim",
+            "path": "Assets/Main/07_Polish/Animation/Death.anim",
+            "type": "Animation",
+            "packedSizeBytes": 2988
+        },
+        {
+            "name": "Shot.anim",
+            "path": "Assets/Main/06_Content/Animation/Shot.anim",
+            "type": "Animation",
+            "packedSizeBytes": 2984
+        },
+        {
+            "name": "Shot.anim",
+            "path": "Assets/Main/07_Polish/Animation/Shot.anim",
+            "type": "Animation",
+            "packedSizeBytes": 2984
         },
         {
             "name": "DebugUIObjectPopupField.prefab",
@@ -638,6 +782,36 @@
             "path": "Packages/com.unity.render-pipelines.core/Runtime/Debugging/Prefabs/Widgets/DebugUIEnumField.prefab",
             "type": "Prefab",
             "packedSizeBytes": 2670
+        },
+        {
+            "name": "AimIdle.anim",
+            "path": "Assets/Main/06_Content/Animation/AimIdle.anim",
+            "type": "Animation",
+            "packedSizeBytes": 2628
+        },
+        {
+            "name": "Idle.anim",
+            "path": "Assets/Main/06_Content/Animation/Idle.anim",
+            "type": "Animation",
+            "packedSizeBytes": 2624
+        },
+        {
+            "name": "Swing.wav",
+            "path": "Assets/Main/07_Polish/Audio/Swing.wav",
+            "type": "Audio",
+            "packedSizeBytes": 2588
+        },
+        {
+            "name": "Hit.anim",
+            "path": "Assets/Main/06_Content/Animation/Hit.anim",
+            "type": "Animation",
+            "packedSizeBytes": 2564
+        },
+        {
+            "name": "Hit.anim",
+            "path": "Assets/Main/07_Polish/Animation/Hit.anim",
+            "type": "Animation",
+            "packedSizeBytes": 2564
         },
         {
             "name": "ProbeVolumeSamplingDebugPositionNormal.compute",
@@ -673,7 +847,13 @@
             "name": "CrowdActor.prefab",
             "path": "Assets/Main/03_Prefab/Prototype/CrowdActor.prefab",
             "type": "Prefab",
-            "packedSizeBytes": 2251
+            "packedSizeBytes": 2299
+        },
+        {
+            "name": "Pistol.wav",
+            "path": "Assets/Main/07_Polish/Audio/Pistol.wav",
+            "type": "Audio",
+            "packedSizeBytes": 2236
         },
         {
             "name": "DebugUIToggle.prefab",
@@ -694,6 +874,24 @@
             "packedSizeBytes": 1680
         },
         {
+            "name": "Charcoal Trousers.mat",
+            "path": "Assets/Main/07_Polish/Charcoal Trousers.mat",
+            "type": "Material",
+            "packedSizeBytes": 1672
+        },
+        {
+            "name": "CommonCharacter.mat",
+            "path": "Assets/Main/06_Content/CommonCharacter.mat",
+            "type": "Material",
+            "packedSizeBytes": 1668
+        },
+        {
+            "name": "Sight Blocker.mat",
+            "path": "Assets/Main/07_Polish/Sight Blocker.mat",
+            "type": "Material",
+            "packedSizeBytes": 1668
+        },
+        {
             "name": "Buildings.mat",
             "path": "Assets/Main/04_Material/Prototype/Buildings.mat",
             "type": "Material",
@@ -706,26 +904,38 @@
             "packedSizeBytes": 1664
         },
         {
-            "name": "Asphalt.mat",
-            "path": "Assets/Main/04_Material/Prototype/Asphalt.mat",
+            "name": "Dark Leather.mat",
+            "path": "Assets/Main/07_Polish/Dark Leather.mat",
             "type": "Material",
-            "packedSizeBytes": 1660
+            "packedSizeBytes": 1664
+        },
+        {
+            "name": "Slate Shirt.mat",
+            "path": "Assets/Main/07_Polish/Slate Shirt.mat",
+            "type": "Material",
+            "packedSizeBytes": 1664
+        },
+        {
+            "name": "Street Iron.mat",
+            "path": "Assets/Main/07_Polish/Street Iron.mat",
+            "type": "Material",
+            "packedSizeBytes": 1664
+        },
+        {
+            "name": "Warm Skin.mat",
+            "path": "Assets/Main/07_Polish/Warm Skin.mat",
+            "type": "Material",
+            "packedSizeBytes": 1664
+        },
+        {
+            "name": "Weapon Steel.mat",
+            "path": "Assets/Main/07_Polish/Weapon Steel.mat",
+            "type": "Material",
+            "packedSizeBytes": 1664
         },
         {
             "name": "Crowd.mat",
             "path": "Assets/Main/04_Material/Prototype/Crowd.mat",
-            "type": "Material",
-            "packedSizeBytes": 1660
-        },
-        {
-            "name": "Pavement.mat",
-            "path": "Assets/Main/04_Material/Prototype/Pavement.mat",
-            "type": "Material",
-            "packedSizeBytes": 1660
-        },
-        {
-            "name": "Roofs.mat",
-            "path": "Assets/Main/04_Material/Prototype/Roofs.mat",
             "type": "Material",
             "packedSizeBytes": 1660
         },
@@ -736,8 +946,38 @@
             "packedSizeBytes": 1660
         },
         {
+            "name": "Facade.mat",
+            "path": "Assets/Main/07_Polish/Facade.mat",
+            "type": "Material",
+            "packedSizeBytes": 1660
+        },
+        {
+            "name": "Stone.mat",
+            "path": "Assets/Main/07_Polish/Stone.mat",
+            "type": "Material",
+            "packedSizeBytes": 1660
+        },
+        {
             "name": "Trim.mat",
             "path": "Assets/Main/04_Material/Prototype/Trim.mat",
+            "type": "Material",
+            "packedSizeBytes": 1656
+        },
+        {
+            "name": "Road.mat",
+            "path": "Assets/Main/07_Polish/Road.mat",
+            "type": "Material",
+            "packedSizeBytes": 1656
+        },
+        {
+            "name": "Roof.mat",
+            "path": "Assets/Main/07_Polish/Roof.mat",
+            "type": "Material",
+            "packedSizeBytes": 1656
+        },
+        {
+            "name": "Sign.mat",
+            "path": "Assets/Main/07_Polish/Sign.mat",
             "type": "Material",
             "packedSizeBytes": 1656
         },
@@ -754,6 +994,12 @@
             "packedSizeBytes": 1608
         },
         {
+            "name": "Melee.wav",
+            "path": "Assets/Main/06_Content/Audio/Melee.wav",
+            "type": "Audio",
+            "packedSizeBytes": 1592
+        },
+        {
             "name": "Fusion.Runtime.dll",
             "path": "Assets/Photon/Fusion/Assemblies/Fusion.Runtime.dll",
             "type": "Assembly",
@@ -766,10 +1012,28 @@
             "packedSizeBytes": 1520
         },
         {
+            "name": "Shot.wav",
+            "path": "Assets/Main/06_Content/Audio/Shot.wav",
+            "type": "Audio",
+            "packedSizeBytes": 1492
+        },
+        {
             "name": "DebugUIProgressBar.prefab",
             "path": "Packages/com.unity.render-pipelines.core/Runtime/Debugging/Prefabs/Widgets/DebugUIProgressBar.prefab",
             "type": "Prefab",
             "packedSizeBytes": 1438
+        },
+        {
+            "name": "Footstep.wav",
+            "path": "Assets/Main/07_Polish/Audio/Footstep.wav",
+            "type": "Audio",
+            "packedSizeBytes": 1436
+        },
+        {
+            "name": "Impact.wav",
+            "path": "Assets/Main/07_Polish/Audio/Impact.wav",
+            "type": "Audio",
+            "packedSizeBytes": 1436
         },
         {
             "name": "DebugUIGroup.prefab",
@@ -784,10 +1048,22 @@
             "packedSizeBytes": 1268
         },
         {
+            "name": "Hit.wav",
+            "path": "Assets/Main/06_Content/Audio/Hit.wav",
+            "type": "Audio",
+            "packedSizeBytes": 1204
+        },
+        {
             "name": "SearchTex.tga",
             "path": "Packages/com.unity.render-pipelines.universal/Textures/SMAA/SearchTex.tga",
             "type": "Texture",
             "packedSizeBytes": 1180
+        },
+        {
+            "name": "Footstep.wav",
+            "path": "Assets/Main/06_Content/Audio/Footstep.wav",
+            "type": "Audio",
+            "packedSizeBytes": 1144
         },
         {
             "name": "UIFoldoutOpened.png",
@@ -856,10 +1132,22 @@
             "packedSizeBytes": 916
         },
         {
+            "name": "00000000000000000000000000000000",
+            "path": "BuiltIn/00000000000000000000000000000000",
+            "type": "Other",
+            "packedSizeBytes": 890
+        },
+        {
             "name": "UIElement8px.png",
             "path": "Packages/com.unity.render-pipelines.core/Runtime/Debugging/Prefabs/Textures/UIElement8px.png",
             "type": "Texture",
             "packedSizeBytes": 872
+        },
+        {
+            "name": "Death.wav",
+            "path": "Assets/Main/06_Content/Audio/Death.wav",
+            "type": "Audio",
+            "packedSizeBytes": 824
         },
         {
             "name": "PostProcessData.asset",
@@ -868,10 +1156,10 @@
             "packedSizeBytes": 784
         },
         {
-            "name": "00000000000000000000000000000000",
-            "path": "BuiltIn/00000000000000000000000000000000",
-            "type": "Other",
-            "packedSizeBytes": 758
+            "name": "Reload.wav",
+            "path": "Assets/Main/06_Content/Audio/Reload.wav",
+            "type": "Audio",
+            "packedSizeBytes": 632
         },
         {
             "name": "White1px.png",
@@ -884,6 +1172,12 @@
             "path": "Assets/Settings/SampleSceneProfile.asset",
             "type": "Data",
             "packedSizeBytes": 568
+        },
+        {
+            "name": "LocalWarning.wav",
+            "path": "Assets/Main/06_Content/Audio/LocalWarning.wav",
+            "type": "Audio",
+            "packedSizeBytes": 512
         },
         {
             "name": "FusionStatisticsDefaultConfig.asset",
@@ -1166,6 +1460,42 @@
             "path": "Assets/TextMesh Pro/Resources/TMP Settings.asset",
             "type": "Data",
             "packedSizeBytes": 300
+        },
+        {
+            "name": "Citizen.overrideController",
+            "path": "Assets/Main/07_Polish/Animation/Citizen.overrideController",
+            "type": "Animation",
+            "packedSizeBytes": 292
+        },
+        {
+            "name": "PresentationProfile.asset",
+            "path": "Assets/Main/06_Content/Resources/Crowd/PresentationProfile.asset",
+            "type": "Data",
+            "packedSizeBytes": 288
+        },
+        {
+            "name": "RefinedPresentation.asset",
+            "path": "Assets/Main/07_Polish/RefinedPresentation.asset",
+            "type": "Data",
+            "packedSizeBytes": 288
+        },
+        {
+            "name": "GameSettings.asset",
+            "path": "Assets/Main/06_Content/Resources/Crowd/GameSettings.asset",
+            "type": "Data",
+            "packedSizeBytes": 284
+        },
+        {
+            "name": "CityLayout.asset",
+            "path": "Assets/Main/07_Polish/CityLayout.asset",
+            "type": "Data",
+            "packedSizeBytes": 284
+        },
+        {
+            "name": "MapProfile.asset",
+            "path": "Assets/Main/06_Content/Resources/Crowd/MapProfile.asset",
+            "type": "Data",
+            "packedSizeBytes": 268
         },
         {
             "name": "Unlit_FusionRadialChartShader.mat",
@@ -8110,6 +8440,24 @@
             "packedSizeBytes": 124
         },
         {
+            "name": "CrowdActorPresentation.cs",
+            "path": "Assets/Main/02_Script/Production/Content/CrowdActorPresentation.cs",
+            "type": "Script",
+            "packedSizeBytes": 120
+        },
+        {
+            "name": "CrowdPresentationProfile.cs",
+            "path": "Assets/Main/02_Script/Production/Content/CrowdPresentationProfile.cs",
+            "type": "Script",
+            "packedSizeBytes": 120
+        },
+        {
+            "name": "CrowdCameraController.cs",
+            "path": "Assets/Main/02_Script/Production/Control/CrowdCameraController.cs",
+            "type": "Script",
+            "packedSizeBytes": 120
+        },
+        {
             "name": "CrowdConnectionService.cs",
             "path": "Assets/Main/02_Script/Production/Session/CrowdConnectionService.cs",
             "type": "Script",
@@ -10192,6 +10540,24 @@
             "packedSizeBytes": 116
         },
         {
+            "name": "CrowdContentCatalog.cs",
+            "path": "Assets/Main/02_Script/Production/Content/CrowdContentCatalog.cs",
+            "type": "Script",
+            "packedSizeBytes": 112
+        },
+        {
+            "name": "CrowdGameSettings.cs",
+            "path": "Assets/Main/02_Script/Production/Content/CrowdGameSettings.cs",
+            "type": "Script",
+            "packedSizeBytes": 112
+        },
+        {
+            "name": "CrowdMapAuthoring.cs",
+            "path": "Assets/Main/02_Script/Production/Content/CrowdMapAuthoring.cs",
+            "type": "Script",
+            "packedSizeBytes": 112
+        },
+        {
             "name": "NetworkCharacterController.cs",
             "path": "Assets/Photon/Fusion/Runtime/NetworkCharacterController.cs",
             "type": "Script",
@@ -11446,6 +11812,12 @@
             "packedSizeBytes": 112
         },
         {
+            "name": "MovementSmokeTest.cs",
+            "path": "Assets/Main/02_Script/Production/Tests/MovementSmokeTest.cs",
+            "type": "Script",
+            "packedSizeBytes": 108
+        },
+        {
             "name": "SessionUiSmokeTest.cs",
             "path": "Assets/Main/02_Script/Production/Tests/SessionUiSmokeTest.cs",
             "type": "Script",
@@ -12074,6 +12446,18 @@
             "path": "Packages/com.unity.visualscripting/DocCodeExamples/VariableExamples.cs",
             "type": "Script",
             "packedSizeBytes": 108
+        },
+        {
+            "name": "CrowdMapProfile.cs",
+            "path": "Assets/Main/02_Script/Production/Content/CrowdMapProfile.cs",
+            "type": "Script",
+            "packedSizeBytes": 104
+        },
+        {
+            "name": "CrowdLocalInput.cs",
+            "path": "Assets/Main/02_Script/Production/Control/CrowdLocalInput.cs",
+            "type": "Script",
+            "packedSizeBytes": 104
         },
         {
             "name": "SessionModel_model.cs",
@@ -12808,6 +13192,12 @@
             "packedSizeBytes": 104
         },
         {
+            "name": "ContentSmokeTest.cs",
+            "path": "Assets/Main/02_Script/Production/Tests/ContentSmokeTest.cs",
+            "type": "Script",
+            "packedSizeBytes": 100
+        },
+        {
             "name": "Fusion.Unity.cs",
             "path": "Assets/Photon/Fusion/Runtime/Fusion.Unity.cs",
             "type": "Script",
@@ -13202,6 +13592,12 @@
             "path": "Packages/com.unity.ugui/Runtime/UGUI/UI/Core/VertexModifiers/PositionAsUV1.cs",
             "type": "Script",
             "packedSizeBytes": 100
+        },
+        {
+            "name": "CrowdContent.cs",
+            "path": "Assets/Main/02_Script/Production/Content/CrowdContent.cs",
+            "type": "Script",
+            "packedSizeBytes": 96
         },
         {
             "name": "CrowdActor.cs",
@@ -14470,6 +14866,12 @@
             "packedSizeBytes": 88
         },
         {
+            "name": "ContentCatalog.asset",
+            "path": "Assets/Main/06_Content/Resources/Crowd/ContentCatalog.asset",
+            "type": "Data",
+            "packedSizeBytes": 84
+        },
+        {
             "name": "Player.cs",
             "path": "Assets/Photon/PhotonRealtime/Code/Player.cs",
             "type": "Script",
@@ -14867,7 +15269,7 @@
         },
         {
             "type": "Warning",
-            "message": "Assets\\Main\\02_Script\\Production\\Session\\CrowdConnectionService.cs(318,67): warning CS0618: 'SimulationMessagePtr' is obsolete: 'Not used anymore'"
+            "message": "Assets\\Main\\02_Script\\Production\\Session\\CrowdConnectionService.cs(321,67): warning CS0618: 'SimulationMessagePtr' is obsolete: 'Not used anymore'"
         },
         {
             "type": "Warning",

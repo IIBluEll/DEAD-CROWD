@@ -17,6 +17,7 @@ namespace DeadCrowd.Tests
         private string _role;
         private string _scenario;
         private string _code;
+        private int _capacity = 2;
         private bool _finished;
         private float _started;
 
@@ -38,6 +39,7 @@ namespace DeadCrowd.Tests
             {
                 if (args[i] == "--session-smoke") _role = args[i + 1];
                 if (args[i] == "--session-case") _scenario = args[i + 1];
+                if (args[i] == "--session-capacity") _capacity = int.Parse(args[i + 1]);
                 if (args[i] == "--session-code") _code = args[i + 1];
             }
             try
@@ -98,8 +100,8 @@ namespace DeadCrowd.Tests
             bool host = _role == "host";
             bool block = host ? _scenario == "host-timeout" : _scenario == "delay" || _scenario == "timeout" || _scenario == "load-failure" || _scenario == "loading-leave";
             _runtime.Connection.TestBlockLoading = block;
-            await _runtime.Connect_async(host ? GameMode.Host : GameMode.Client, _code);
-            await WaitUntil_async(() => _runtime.Match != null && _runtime.Match.ConnectedCount() == 2, 25f, "two players joined");
+            await _runtime.Connect_async(host ? GameMode.Host : GameMode.Client, _code, _capacity);
+            await WaitUntil_async(() => _runtime.Match != null && _runtime.Match.ConnectedCount() == _capacity, 25f, "two players joined");
             CrowdMatch match = _runtime.Match;
             CrowdActor local = match.LocalActor();
             await WaitUntil_async(() => { if (match.State == ROUND_STATE.LOBBY) local.RPC_SetReady(true, match.RoundId); return local.Ready || match.State != ROUND_STATE.LOBBY; }, 5f, "ready");
@@ -117,18 +119,18 @@ namespace DeadCrowd.Tests
                 Require(local.Health == 100 && local.Exposure == 0 && local.Magazine == 6, "combat changed during loading");
                 if (!host)
                 {
-                    local.RPC_ReportLoaded(round - 1, CrowdRules.BUILD_VERSION, true);
+                    local.RPC_ReportLoaded(round - 1, DeadCrowd.Content.CrowdContent.SessionVersion, true);
                     await Task.Delay(500);
                     Require(match.State == ROUND_STATE.LOADING && local.LoadedRoundId != round, "stale load response accepted");
                     _runtime.Connection.TestBlockLoading = false;
                 }
                 await WaitUntil_async(() => match.State == ROUND_STATE.PLAYING, 12f, "all load responses to play");
-                Require(match.LoadedCount() == 2 && match.NpcCount() == 20, "incomplete load at play");
+                Require(match.LoadedCount() == _capacity && match.NpcCount() == match.ExpectedNpcCount, "incomplete load at play");
                 await Task.Delay(1000);
             }
             else if (_scenario == "timeout" || _scenario == "load-failure")
             {
-                if (!host && _scenario == "load-failure") local.RPC_ReportLoaded(round, CrowdRules.BUILD_VERSION, false);
+                if (!host && _scenario == "load-failure") local.RPC_ReportLoaded(round, DeadCrowd.Content.CrowdContent.SessionVersion, false);
                 if (host)
                 {
                     await WaitUntil_async(() => match.State == ROUND_STATE.LOBBY, 40f, "failed loading returns host to lobby");

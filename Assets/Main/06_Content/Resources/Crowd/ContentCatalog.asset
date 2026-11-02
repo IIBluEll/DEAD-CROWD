@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7cd78ea5ac1f4245b8fdeb4e7cf6c1e0, type: 3}
+  m_Name: ContentCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::DeadCrowd.Content.CrowdContentCatalog
+  GameSettings: {fileID: 11400000, guid: 6d824df975b52584e9a5cfca42c1bc53, type: 2}
+  Map: {fileID: 11400000, guid: c5f96a992a17f3e4ca6f8a1559b8bf65, type: 2}
+  Presentation: {fileID: 11400000, guid: 79bd0df358864a34cb8ae6134fa7942e, type: 2}

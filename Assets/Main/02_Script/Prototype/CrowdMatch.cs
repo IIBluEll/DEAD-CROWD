@@ -6,7 +6,7 @@ using UnityEngine.AI;
 
 namespace DeadCrowd.Prototype
 {
-    public sealed class CrowdMatch : NetworkBehaviour
+    public sealed partial class CrowdMatch : NetworkBehaviour
     {
         [SerializeField] private NetworkObject _actorPrefab;
         [SerializeField] private Transform[] _spawnTrans;
@@ -48,11 +48,13 @@ namespace DeadCrowd.Prototype
             public Noise(Vector3 position, float radius, int id) { POSITION = position; RADIUS = radius; ID = id; }
         }
 
+        public int PredictedSteps { get; private set; }
+        public int ResimulatedSteps { get; private set; }
         public IReadOnlyList<CrowdActor> Actors => ACTORS;
         public bool Valid => Object != null && Object.IsValid;
         public int CurrentTick => Runner.Tick.Raw;
         public float RemainingSeconds => Mathf.Max(0f, (EndTick - CurrentTick) * Runner.DeltaTime);
-        public int ExpectedNpcCount => RequiredPlayers == 4 ? 30 : 20;
+        public int ExpectedNpcCount => RequiredPlayers == 4 ? CrowdRules.FFA_NPCS : CrowdRules.DUEL_NPCS;
 
         public int LoadedCount()
         {
@@ -68,7 +70,7 @@ namespace DeadCrowd.Prototype
         public override void Spawned()
         {
             Debug.Log($"[Crowd] Match registered. authority={HasStateAuthority}, mode={Runner.GameMode}");
-            if (!HasStateAuthority) return;
+            if (!HasStateAuthority) { Runner.SetIsSimulated(Object, true); return; }
             Practice = Runner.GameMode == GameMode.Single;
             RequiredPlayers = Practice ? 1 : Runner.SessionInfo.MaxPlayers;
             State = ROUND_STATE.LOBBY;
@@ -92,7 +94,7 @@ namespace DeadCrowd.Prototype
         public bool CanStart()
         {
             if (State != ROUND_STATE.LOBBY || ConnectedCount() != RequiredPlayers) return false;
-            foreach (CrowdActor actor in ACTORS) if (!actor.IsNpc && actor.Connected && !actor.Ready) return false;
+            foreach (CrowdActor actor in ACTORS) if (!Practice && !actor.IsNpc && actor.Connected && !actor.Ready) return false;
             return true;
         }
 
@@ -131,7 +133,16 @@ namespace DeadCrowd.Prototype
 
         public override void FixedUpdateNetwork()
         {
-            if (!HasStateAuthority) return;
+            if (!HasStateAuthority)
+            {
+                CrowdActor local = LocalActor();
+                if (State == ROUND_STATE.PLAYING && local != null && local.Alive)
+                {
+                    SimulatePlayer(local, CurrentTick >= EndTick, false);
+                    if (Runner.IsResimulation) ResimulatedSteps++; else PredictedSteps++;
+                }
+                return;
+            }
             SynchronizePlayers();
             if (State == ROUND_STATE.LOBBY || State == ROUND_STATE.RESULT) return;
             if (State == ROUND_STATE.LOADING) { UpdateLoading(); return; }
@@ -160,7 +171,7 @@ namespace DeadCrowd.Prototype
                 float exposure = actor.Exposure;
                 bool exposed = actor.Exposed;
                 if (actor.DangerThisTick) actor.LastDangerTick = CurrentTick;
-                bool canDecay = CurrentTick - actor.LastDangerTick >= CrowdRules.Ticks(CrowdRules.EXP_DELAY, Runner.DeltaTime);
+                bool canDecay = CrowdRules.CanDecayExposure(exposed, CurrentTick - actor.LastDangerTick, Runner.DeltaTime);
                 CrowdRules.UpdateExposure(ref exposure, ref exposed, actor.DangerThisTick, canDecay, actor.ExposureAddition, Runner.DeltaTime);
                 actor.Exposure = exposure;
                 actor.Exposed = exposed;
@@ -184,8 +195,9 @@ namespace DeadCrowd.Prototype
                 foreach (CrowdActor actor in ACTORS) { actor.HitPending = false; actor.Action = ACTION_STATE.NONE; actor.Aiming = false; }
                 Debug.Log($"[Crowd] Result round={RoundId}, winner={result}, alive={AlivePlayers}");
             }
+            foreach (CrowdActor actor in ACTORS) if (!actor.IsNpc) actor.ConfirmPresentation();
             for (int i = ACTORS.Count - 1; i >= 0; i--)
-                if (ACTORS[i].IsNpc && !ACTORS[i].Alive && CurrentTick - ACTORS[i].DeathTick >= CrowdRules.Ticks(20f, Runner.DeltaTime)) Runner.Despawn(ACTORS[i].Object);
+                if (ACTORS[i].IsNpc && !ACTORS[i].Alive && CurrentTick - ACTORS[i].DeathTick >= CrowdRules.Ticks(CrowdRules.CORPSE_SECONDS, Runner.DeltaTime)) Runner.Despawn(ACTORS[i].Object);
         }
 
         private void SynchronizePlayers()
@@ -239,11 +251,15 @@ namespace DeadCrowd.Prototype
             RoundId++;
             Seed = UnityEngine.Random.Range(1, int.MaxValue);
             _random = new System.Random(Seed);
-            int offset = _random.Next(_spawnTrans.Length);
+            var approved = new List<DeadCrowd.Content.CrowdStartSet>();
+            foreach (var set in DeadCrowd.Content.CrowdContent.Map.StartSets)
+                if (set.Positions.Length == (Practice ? 2 : RequiredPlayers) && ValidateStartSet(set.Positions)) approved.Add(set);
+            if (approved.Count == 0) { HostLoadFailed = true; LastStartFailure = START_FAILURE.LOAD_FAILED; Debug.LogError("[Content] No valid approved start set for this mode."); return; }
+            Vector3[] positions = (Vector3[])approved[_random.Next(approved.Count)].Positions.Clone();
+            for (int i = positions.Length - 1; i > 0; i--) { int j = _random.Next(i + 1); (positions[i], positions[j]) = (positions[j], positions[i]); }
             foreach (CrowdActor actor in ACTORS)
             {
-                Transform spawn = _spawnTrans[(actor.Slot - 1 + offset) % _spawnTrans.Length];
-                actor.ResetRound(spawn.position, Quaternion.Euler(0f, _random.Next(360), 0f));
+                actor.ResetRound(positions[(actor.Slot - 1) % positions.Length], Quaternion.Euler(0f, _random.Next(360), 0f));
             }
             int count = ExpectedNpcCount;
             // Give every start a nearby crowd before distributing the remaining NPCs.
@@ -252,8 +268,8 @@ namespace DeadCrowd.Prototype
             for (int i = 0; i < count; i++)
             {
                 Vector3 position;
-                bool nearStart = i < starts.Count * 3;
-                if (!TrySpawnPoint(nearStart ? starts[i / 3] : Vector3.zero, nearStart ? 7f : 18f, out position))
+                bool nearStart = i < starts.Count * DeadCrowd.Content.CrowdContent.Map.NearbyNpcsPerPlayer;
+                if (!TrySpawnPoint(nearStart ? starts[i / DeadCrowd.Content.CrowdContent.Map.NearbyNpcsPerPlayer] : starts[0], nearStart ? DeadCrowd.Content.CrowdContent.Map.NpcStartRadius : 100f, out position))
                 {
                     Debug.LogError("[Crowd] Valid NPC spawn unavailable. Round start cancelled.");
                     HostLoadFailed = true;
@@ -290,22 +306,41 @@ namespace DeadCrowd.Prototype
             }
             if (failed) { ReturnToLobby(); return; }
             if (LoadedCount() != RequiredPlayers) return;
-            CountdownEndTick = CurrentTick + CrowdRules.Ticks(3f, Runner.DeltaTime);
+            CountdownEndTick = CurrentTick + CrowdRules.Ticks(CrowdRules.COUNTDOWN_SECONDS, Runner.DeltaTime);
             State = ROUND_STATE.COUNTDOWN;
             Debug.Log($"[Crowd] Countdown round={RoundId}, loaded={LoadedCount()}/{RequiredPlayers}");
         }
 
+        private bool ValidateStartSet(Vector3[] positions)
+        {
+            foreach (Vector3 p in positions)
+            {
+                if (!NavMesh.SamplePosition(p, out NavMeshHit hit, 0.1f, NavMesh.AllAreas) || Physics.CheckCapsule(p + Vector3.up * 0.4f, p + Vector3.up * 1.4f, 0.3f, CrowdRules.WORLD_MASK)) return false;
+                foreach (Vector3 q in positions)
+                {
+                    if (p == q) continue;
+                    if (Vector3.Distance(p, q) <= CrowdRules.MELEE_RANGE || !Physics.Linecast(p + Vector3.up * 1.55f, q + Vector3.up * 1.55f, CrowdRules.WORLD_MASK)) return false;
+                    var path = new NavMeshPath();
+                    if (!NavMesh.CalculatePath(p, q, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) return false;
+                }
+            }
+            return true;
+        }
+
         private bool TrySpawnPoint(Vector3 origin, float radius, out Vector3 position)
         {
-            for (int attempt = 0; attempt < 100; attempt++)
+            for (int attempt = 0; attempt < DeadCrowd.Content.CrowdContent.Map.SpawnAttempts; attempt++)
             {
                 Vector3 point = origin + new Vector3((float)(_random.NextDouble() * 2 - 1) * radius, 0f, (float)(_random.NextDouble() * 2 - 1) * radius);
-                if (Mathf.Abs(point.x) > 18.5f || Mathf.Abs(point.z) > 18.5f || !NavMesh.SamplePosition(point, out NavMeshHit hit, 0.8f, NavMesh.AllAreas)) continue;
+                if (radius >= 100f) point = new Vector3(Mathf.Lerp(DeadCrowd.Content.CrowdContent.Map.BoundsMin.x, DeadCrowd.Content.CrowdContent.Map.BoundsMax.x, (float)_random.NextDouble()), 0f, Mathf.Lerp(DeadCrowd.Content.CrowdContent.Map.BoundsMin.y, DeadCrowd.Content.CrowdContent.Map.BoundsMax.y, (float)_random.NextDouble()));
+                if (point.x < DeadCrowd.Content.CrowdContent.Map.BoundsMin.x || point.x > DeadCrowd.Content.CrowdContent.Map.BoundsMax.x || point.z < DeadCrowd.Content.CrowdContent.Map.BoundsMin.y || point.z > DeadCrowd.Content.CrowdContent.Map.BoundsMax.y || !NavMesh.SamplePosition(point, out NavMeshHit hit, 0.8f, NavMesh.AllAreas)) continue;
                 point = hit.position;
                 if (Physics.CheckCapsule(point + Vector3.up * 0.4f, point + Vector3.up * 1.4f, 0.32f, CrowdRules.WORLD_MASK)) continue;
                 bool overlaps = false;
-                foreach (CrowdActor actor in ACTORS) if (actor.Alive && CrowdRules.Flat(actor.transform.position - point).sqrMagnitude < 0.65f * 0.65f) { overlaps = true; break; }
+                foreach (CrowdActor actor in ACTORS) if (actor.Alive && CrowdRules.Flat(actor.transform.position - point).sqrMagnitude < DeadCrowd.Content.CrowdContent.Map.BodySeparation * DeadCrowd.Content.CrowdContent.Map.BodySeparation) { overlaps = true; break; }
                 if (overlaps) continue;
+                var path = new NavMeshPath();
+                if (!NavMesh.CalculatePath(origin, point, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) continue;
                 position = point;
                 return true;
             }
@@ -313,261 +348,5 @@ namespace DeadCrowd.Prototype
             return false;
         }
 
-        private void SimulatePlayer(CrowdActor actor, bool boundary)
-        {
-            actor.HasCurrentInput = Runner.TryGetInputForPlayer(actor.Object.InputAuthority, out CrowdInput input) && input.RoundId == RoundId;
-            if (!actor.HasCurrentInput) input = new CrowdInput { Yaw = actor.transform.eulerAngles.y, AttackSequence = actor.LastAttackSequence, ReloadSequence = actor.LastReloadSequence };
-            if (!float.IsFinite(input.Yaw) || !float.IsFinite(input.Pitch) || !float.IsFinite(input.Move.x) || !float.IsFinite(input.Move.y)) input = new CrowdInput { Yaw = actor.transform.eulerAngles.y, AttackSequence = actor.LastAttackSequence, ReloadSequence = actor.LastReloadSequence };
-            input.Pitch = Mathf.Clamp(input.Pitch, -60f, 30f);
-            input.Move = Vector2.ClampMagnitude(input.Move, 1f);
-            actor.CurrentInput = input;
-            CompleteAction(actor);
-            bool attack = input.AttackSequence != actor.LastAttackSequence;
-            bool reload = input.ReloadSequence != actor.LastReloadSequence;
-            actor.LastAttackSequence = input.AttackSequence;
-            actor.LastReloadSequence = input.ReloadSequence;
-            if (boundary) return;
-
-            bool unlocked = actor.Action == ACTION_STATE.NONE;
-            bool reloadValid = unlocked && reload && actor.Magazine < CrowdRules.MAGAZINE && actor.Reserve > 0;
-            bool meleeIntent = unlocked && attack && !input.Aim && !reloadValid;
-            actor.Aiming = !reloadValid && (actor.Action == ACTION_STATE.NONE || actor.Action == ACTION_STATE.SHOT) && input.Aim;
-            Vector3 direction = Quaternion.Euler(0f, input.Yaw, 0f) * new Vector3(input.Move.x, 0f, input.Move.y);
-            bool sprint = unlocked && !reloadValid && !attack && !actor.Aiming && input.Sprint && direction.sqrMagnitude > 0f;
-            float speed = actor.Action == ACTION_STATE.MELEE || meleeIntent ? CrowdRules.MELEE_SPEED : actor.Aiming ? CrowdRules.AIM_SPEED : sprint ? CrowdRules.SPRINT_SPEED : CrowdRules.WALK_SPEED;
-            Vector3 facing = actor.Aiming ? Quaternion.Euler(0f, input.Yaw, 0f) * Vector3.forward : direction;
-            Vector3 previous = actor.transform.position;
-            actor.Move(direction, speed, actor.Action == ACTION_STATE.MELEE || meleeIntent ? CrowdRules.MELEE_TURN_SPEED : CrowdRules.TURN_SPEED, facing, Runner.DeltaTime);
-            if (sprint && CrowdRules.Flat(actor.transform.position - previous).sqrMagnitude > 0.000001f) AddExposure(actor, CrowdRules.EXP_SPRINT * Runner.DeltaTime);
-
-            if (reloadValid)
-            {
-                actor.Action = ACTION_STATE.RELOAD;
-                actor.Aiming = false;
-                actor.ActionEndTick = CurrentTick + CrowdRules.Ticks(CrowdRules.RELOAD_SECONDS, Runner.DeltaTime);
-            }
-            else if (meleeIntent)
-            {
-                StartAttack(actor, ACTION_STATE.MELEE, CrowdRules.MELEE_WINDUP, CrowdRules.MELEE_CYCLE);
-                AddExposure(actor, CrowdRules.EXP_MELEE);
-                EmitNoise(actor.transform.position, 3f);
-            }
-            else if (unlocked && attack && input.Aim && actor.Magazine > 0 && Vector3.Angle(actor.transform.forward, Quaternion.Euler(0f, input.Yaw, 0f) * Vector3.forward) <= CrowdRules.AIM_TOLERANCE)
-            {
-                StartAttack(actor, ACTION_STATE.SHOT, 0f, CrowdRules.GUN_INTERVAL);
-                actor.Magazine--;
-                AddExposure(actor, CrowdRules.EXP_SHOT);
-                EmitNoise(actor.transform.position, 18f);
-            }
-        }
-
-        private void CompleteAction(CrowdActor actor)
-        {
-            if (actor.Action == ACTION_STATE.NONE || CurrentTick < actor.ActionEndTick) return;
-            if (actor.Action == ACTION_STATE.RELOAD)
-            {
-                int amount = CrowdRules.ReloadAmount(actor.Magazine, actor.Reserve);
-                actor.Magazine += amount;
-                actor.Reserve -= amount;
-            }
-            actor.Action = ACTION_STATE.NONE;
-        }
-
-        private void StartAttack(CrowdActor actor, ACTION_STATE action, float windup, float cycle)
-        {
-            actor.Action = action;
-            actor.HitPending = true;
-            actor.HitTick = CurrentTick + CrowdRules.Ticks(windup, Runner.DeltaTime);
-            actor.ActionEndTick = CurrentTick + CrowdRules.Ticks(cycle, Runner.DeltaTime);
-        }
-
-        private void AddExposure(CrowdActor actor, float amount) { actor.DangerThisTick = true; actor.ExposureAddition += amount; }
-        private void EmitNoise(Vector3 position, float radius) { NOISES.Add(new Noise(position, radius, ++_noiseId)); }
-
-        private void CollectAttack(CrowdActor actor)
-        {
-            if (!actor.HitPending || CurrentTick < actor.HitTick) return;
-            actor.HitPending = false;
-            if (actor.IsNpc)
-            {
-                CrowdActor target = actor.RememberedTarget;
-                if (target != null && target.Alive && InAttackRange(actor, target, CrowdRules.AI_RANGE, CrowdRules.AI_HALF_ANGLE)) DAMAGE.Add(new Damage(target, CrowdRules.AI_DAMAGE, DEATH_CAUSE.ZOMBIE));
-            }
-            else if (actor.Action == ACTION_STATE.MELEE)
-            {
-                CrowdActor target = SelectMeleeTarget(actor);
-                if (target == null) return;
-                bool back = CrowdRules.IsBackstab(target.transform.forward, actor.transform.position - target.transform.position);
-                DAMAGE.Add(new Damage(target, back ? CrowdRules.MAX_HP : CrowdRules.MELEE_DAMAGE, back ? DEATH_CAUSE.BACKSTAB : DEATH_CAUSE.MELEE));
-                EmitNoise(target.transform.position, 6f);
-                Debug.Log($"[Crowd] Melee round={RoundId}, tick={CurrentTick}, attacker={actor.StableId}, target={target.StableId}, back={back}");
-            }
-            else if (actor.Action == ACTION_STATE.SHOT) CollectShot(actor);
-        }
-
-        private CrowdActor SelectMeleeTarget(CrowdActor actor)
-        {
-            CrowdActor selected = null;
-            float distance = float.MaxValue;
-            foreach (CrowdActor target in ACTORS)
-            {
-                if (target == actor || !target.Alive || !InAttackRange(actor, target, CrowdRules.MELEE_RANGE, CrowdRules.MELEE_HALF_ANGLE)) continue;
-                float next = CrowdRules.Flat(target.transform.position - actor.transform.position).sqrMagnitude;
-                if (next < distance || next == distance && selected != null && target.StableId < selected.StableId) { distance = next; selected = target; }
-            }
-            return selected;
-        }
-
-        private bool InAttackRange(CrowdActor actor, CrowdActor target, float range, float angle)
-        {
-            Vector3 delta = CrowdRules.Flat(target.transform.position - actor.transform.position);
-            if (delta.sqrMagnitude > range * range || !CrowdRules.WithinCone(actor.transform.forward, delta, angle)) return false;
-            return !FirstBlock(actor.Center, target.Center, actor, out CrowdActor blocker, out _) || blocker == target;
-        }
-
-        private bool FirstBlock(Vector3 start, Vector3 end, CrowdActor self, out CrowdActor actor, out Vector3 point)
-        {
-            actor = null;
-            point = end;
-            foreach (Collider collider in Physics.OverlapSphere(start, 0.015f, ~0, QueryTriggerInteraction.Ignore))
-            {
-                CrowdActor overlap = collider.GetComponentInParent<CrowdActor>();
-                if (overlap == self || overlap != null && !overlap.Alive) continue;
-                actor = overlap;
-                point = start;
-                return true;
-            }
-            Vector3 direction = end - start;
-            RaycastHit[] hits = Physics.RaycastAll(start, direction.normalized, direction.magnitude, ~0, QueryTriggerInteraction.Ignore);
-            float distance = float.MaxValue;
-            bool blocked = false;
-            foreach (RaycastHit hit in hits)
-            {
-                CrowdActor candidate = hit.collider.GetComponentInParent<CrowdActor>();
-                if (candidate == self || candidate != null && !candidate.Alive || hit.distance >= distance) continue;
-                distance = hit.distance;
-                actor = candidate;
-                point = hit.point;
-                blocked = true;
-            }
-            return blocked;
-        }
-
-        private void CollectShot(CrowdActor shooter)
-        {
-            Quaternion aim = Quaternion.Euler(shooter.CurrentInput.Pitch, shooter.CurrentInput.Yaw, 0f);
-            Vector3 pivot = shooter.transform.position + Vector3.up * 1.5f;
-            Vector3 cameraPosition = pivot - aim * Vector3.forward * 2.2f + aim * Vector3.right * 0.45f;
-            Vector3 cameraDelta = cameraPosition - pivot;
-            if (Physics.SphereCast(pivot, 0.2f, cameraDelta.normalized, out RaycastHit cameraHit, cameraDelta.magnitude, CrowdRules.WORLD_MASK)) cameraPosition = pivot + cameraDelta.normalized * Mathf.Max(0.05f, cameraHit.distance - 0.05f);
-            Vector3 aimPoint = cameraPosition + aim * Vector3.forward * 100f;
-            if (FirstBlock(cameraPosition, aimPoint, shooter, out _, out Vector3 hitPoint)) aimPoint = hitPoint;
-            Vector3 muzzle = shooter.transform.position + Vector3.up * 1.2f + shooter.transform.forward * 0.4f + shooter.transform.right * 0.2f;
-            bool blocked = FirstBlock(shooter.Center, muzzle, shooter, out CrowdActor target, out Vector3 point);
-            if (!blocked) FirstBlock(muzzle, muzzle + (aimPoint - muzzle).normalized * CrowdRules.GUN_RANGE, shooter, out target, out point);
-            if (target != null) DAMAGE.Add(new Damage(target, CrowdRules.GUN_DAMAGE, DEATH_CAUSE.PISTOL));
-            shooter.ShotEnd = point;
-            shooter.ShotSequence++;
-        }
-
-        private bool CanSee(CrowdActor npc, CrowdActor target)
-        {
-            if (target == null || !target.Alive || !target.Connected) return false;
-            Vector3 delta = CrowdRules.Flat(target.transform.position - npc.transform.position);
-            return delta.sqrMagnitude <= CrowdRules.SIGHT_RANGE * CrowdRules.SIGHT_RANGE && CrowdRules.WithinCone(npc.transform.forward, delta, CrowdRules.SIGHT_HALF_ANGLE) && !Physics.Linecast(npc.transform.position + Vector3.up * 1.55f, target.Center, CrowdRules.WORLD_MASK);
-        }
-
-        private void SetGoal(CrowdActor npc, Vector3 goal, AI_STATE state)
-        {
-            npc.Goal = goal;
-            npc.AiState = state;
-            npc.WaitingAtGoal = false;
-            npc.LastProgressTick = CurrentTick;
-            npc.LastPathDistance = float.MaxValue;
-        }
-
-        private void SimulateNpc(CrowdActor npc, bool boundary)
-        {
-            CompleteAction(npc);
-            if (boundary) return;
-            if (npc.RememberedTarget != null && (!npc.RememberedTarget.Alive || !npc.RememberedTarget.Connected)) { npc.RememberedTarget = null; npc.AiState = AI_STATE.IDLE; }
-            bool seesTarget = CanSee(npc, npc.RememberedTarget);
-            if (npc.Action == ACTION_STATE.MELEE)
-            {
-                npc.Move(Vector3.zero, 0f, CrowdRules.TURN_SPEED, seesTarget ? CrowdRules.Flat(npc.RememberedTarget.transform.position - npc.transform.position) : Vector3.zero, Runner.DeltaTime);
-                return;
-            }
-            if (seesTarget)
-            {
-                SetGoal(npc, npc.RememberedTarget.transform.position, AI_STATE.CHASE);
-            }
-            else if (npc.RememberedTarget == null)
-            {
-                CrowdActor found = null;
-                float best = float.MaxValue;
-                foreach (CrowdActor player in ACTORS)
-                {
-                    if (player.IsNpc || !player.Exposed || !CanSee(npc, player)) continue;
-                    float distance = (player.transform.position - npc.transform.position).sqrMagnitude;
-                    if (distance < best || distance == best && found != null && player.StableId < found.StableId) { best = distance; found = player; }
-                }
-                if (found != null) { npc.RememberedTarget = found; SetGoal(npc, found.transform.position, AI_STATE.CHASE); }
-            }
-            else if (npc.AiState == AI_STATE.CHASE || npc.AiState == AI_STATE.ATTACK) SetGoal(npc, npc.Goal, AI_STATE.SEARCH);
-
-            if (npc.AiState == AI_STATE.CHASE)
-            {
-                Vector3 direction = npc.PathDirection(npc.Goal, CurrentTick);
-                npc.Move(direction, CrowdRules.CHASE_SPEED, CrowdRules.TURN_SPEED, CrowdRules.Flat(npc.Goal - npc.transform.position), Runner.DeltaTime);
-                if (InAttackRange(npc, npc.RememberedTarget, CrowdRules.AI_RANGE, CrowdRules.AI_HALF_ANGLE))
-                {
-                    StartAttack(npc, ACTION_STATE.MELEE, CrowdRules.AI_WINDUP, CrowdRules.AI_CYCLE);
-                    npc.AiState = AI_STATE.ATTACK;
-                }
-                return;
-            }
-            if (npc.AiState != AI_STATE.SEARCH)
-            {
-                Noise? selected = null;
-                float best = float.MaxValue;
-                foreach (Noise noise in NOISES)
-                {
-                    float distance = (npc.transform.position - noise.POSITION).sqrMagnitude;
-                    if (distance > noise.RADIUS * noise.RADIUS) continue;
-                    if (!selected.HasValue || noise.RADIUS > selected.Value.RADIUS || noise.RADIUS == selected.Value.RADIUS && (distance < best || distance == best && noise.ID < selected.Value.ID)) { selected = noise; best = distance; }
-                }
-                if (selected.HasValue) SetGoal(npc, selected.Value.POSITION, AI_STATE.INVESTIGATE);
-            }
-            if (npc.AiState == AI_STATE.IDLE)
-            {
-                if (CurrentTick < npc.WaitUntilTick) return;
-                Vector3 goal;
-                if (TrySpawnPoint(npc.transform.position, 8f, out goal) && Vector3.Distance(goal, npc.transform.position) >= 3f) SetGoal(npc, goal, AI_STATE.WANDER);
-                else npc.WaitUntilTick = CurrentTick + CrowdRules.Ticks(1f, Runner.DeltaTime);
-                return;
-            }
-            if (npc.WaitingAtGoal)
-            {
-                npc.Move(Vector3.zero, 0f, CrowdRules.TURN_SPEED, Quaternion.Euler(0f, Runner.DeltaTime * 90f, 0f) * npc.transform.forward, Runner.DeltaTime);
-                if (CurrentTick >= npc.WaitUntilTick) { npc.AiState = AI_STATE.IDLE; npc.RememberedTarget = null; npc.WaitUntilTick = CurrentTick + CrowdRules.Ticks(1f, Runner.DeltaTime); }
-                return;
-            }
-            Vector3 movement = npc.PathDirection(npc.Goal, CurrentTick);
-            npc.Move(movement, CrowdRules.WALK_SPEED, CrowdRules.TURN_SPEED, movement, Runner.DeltaTime);
-            float remaining = npc.RemainingPathDistance();
-            if (remaining <= npc.LastPathDistance - 0.1f) { npc.LastPathDistance = remaining; npc.LastProgressTick = CurrentTick; }
-            bool failed = CurrentTick - npc.LastProgressTick >= CrowdRules.Ticks(5f, Runner.DeltaTime);
-            if (CrowdRules.Flat(npc.Goal - npc.transform.position).sqrMagnitude > 0.16f && !failed) return;
-            if (npc.AiState == AI_STATE.WANDER)
-            {
-                npc.AiState = AI_STATE.IDLE;
-                npc.WaitUntilTick = CurrentTick + CrowdRules.Ticks(1f + (float)_random.NextDouble() * 2f, Runner.DeltaTime);
-            }
-            else
-            {
-                npc.WaitingAtGoal = true;
-                npc.WaitUntilTick = CurrentTick + CrowdRules.Ticks(npc.AiState == AI_STATE.SEARCH ? 3f : 2f, Runner.DeltaTime);
-            }
-        }
     }
 }

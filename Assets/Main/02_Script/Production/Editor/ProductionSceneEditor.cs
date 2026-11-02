@@ -72,10 +72,11 @@ namespace DeadCrowd.Editor
             Transform title = Card(screens[0].transform);
             Label("Brand", title, font, "DEAD CROWD", new Vector2(0, 235), new Vector2(700, 85), 62);
             Label("Subtitle", title, font, "Find your opponents in the crowd. Be the last survivor.", new Vector2(0, 145), new Vector2(690, 65), 25);
-            Button("Create Room", "Create Room", title, font, new Vector2(0, 35), SESSION_ACTION.SHOW_CREATE, bindings);
-            Button("Join Room", "Join With Code", title, font, new Vector2(0, -45), SESSION_ACTION.SHOW_JOIN, bindings);
-            Button("Settings", "Settings", title, font, new Vector2(0, -125), SESSION_ACTION.SETTINGS, bindings);
-            Button("Quit", "Quit Game", title, font, new Vector2(0, -205), SESSION_ACTION.QUIT, bindings);
+            Button("Solo Practice", "Solo Practice", title, font, new Vector2(0, 65), SESSION_ACTION.SOLO, bindings);
+            Button("Create Room", "Create Room", title, font, new Vector2(0, -15), SESSION_ACTION.SHOW_CREATE, bindings);
+            Button("Join Room", "Join With Code", title, font, new Vector2(0, -95), SESSION_ACTION.SHOW_JOIN, bindings);
+            Button("Settings", "Settings", title, font, new Vector2(0, -175), SESSION_ACTION.SETTINGS, bindings);
+            Button("Quit", "Quit Game", title, font, new Vector2(0, -255), SESSION_ACTION.QUIT, bindings);
 
             Transform create = Card(screens[(int)SESSION_SCREEN.CREATE].transform);
             Header(create, font, "Create Room", "The room mode cannot be changed after creation.");
@@ -125,7 +126,7 @@ namespace DeadCrowd.Editor
             Button("Leave", "Leave Room", result, font, new Vector2(0, -175), SESSION_ACTION.LEAVE, bindings);
             GameObject menu = FullImage("Menu Overlay", canvasObj.transform, new Color(0, 0, 0, 0.65f));
             Transform menuCard = Card(menu.transform);
-            Header(menuCard, font, "Menu", "The online match keeps running.");
+            Header(menuCard, font, "Menu", "The match keeps running.");
             Button("Resume", "Resume", menuCard, font, new Vector2(0, 20), SESSION_ACTION.RESUME, bindings);
             Button("Settings", "Settings", menuCard, font, new Vector2(0, -65), SESSION_ACTION.SETTINGS, bindings);
             Button("Leave", "Leave Room", menuCard, font, new Vector2(0, -150), SESSION_ACTION.LEAVE, bindings);
@@ -215,6 +216,71 @@ namespace DeadCrowd.Editor
             slider.minValue = min; slider.maxValue = max; slider.value = value; return slider;
         }
 
+        [MenuItem("DEAD CROWD/Development/Add Solo Practice UI")]
+        public static void InstallSoloPractice()
+        {
+            var scene = EditorSceneManager.OpenScene(SCENE_PATH);
+            SessionScreen_view view = UnityEngine.Object.FindFirstObjectByType<SessionScreen_view>();
+            if (view == null) throw new InvalidOperationException("Main Canvas UI is missing.");
+            var serializedView = new SerializedObject(view);
+            SerializedProperty bindings = serializedView.FindProperty("_bindings");
+            Button createBtn = null;
+            bool installed = false;
+            for (int i = 0; i < bindings.arraySize; i++)
+            {
+                SerializedProperty binding = bindings.GetArrayElementAtIndex(i);
+                SESSION_ACTION action = (SESSION_ACTION)binding.FindPropertyRelative("Action").intValue;
+                if (action == SESSION_ACTION.SOLO) installed = true;
+                if (action == SESSION_ACTION.SHOW_CREATE) createBtn = (Button)binding.FindPropertyRelative("TargetBtn").objectReferenceValue;
+            }
+            if (!installed)
+            {
+                if (createBtn == null) throw new InvalidOperationException("Title Create Room button is missing.");
+                Transform title = createBtn.transform.parent;
+                // Move only the original layout. Custom title layouts keep their saved positions.
+                bool defaultLayout = ((RectTransform)createBtn.transform).anchoredPosition == new Vector2(0, 35);
+                if (defaultLayout)
+                {
+                    foreach (RectTransform child in title)
+                        if (child.GetComponent<Button>() != null) child.anchoredPosition += new Vector2(0, -50);
+                }
+                GameObject soloObj = UnityEngine.Object.Instantiate(createBtn.gameObject, title);
+                soloObj.name = "Solo Practice";
+                ((RectTransform)soloObj.transform).anchoredPosition = new Vector2(0, defaultLayout ? 65 : -335);
+                Button soloBtn = soloObj.GetComponent<Button>();
+                soloBtn.onClick = new Button.ButtonClickedEvent();
+                soloObj.GetComponentInChildren<TMP_Text>(true).text = "Solo Practice";
+                soloObj.GetComponent<Image>().color = ACCENT;
+                int index = bindings.arraySize++;
+                SerializedProperty added = bindings.GetArrayElementAtIndex(index);
+                added.FindPropertyRelative("Action").intValue = (int)SESSION_ACTION.SOLO;
+                added.FindPropertyRelative("TargetBtn").objectReferenceValue = soloBtn;
+                serializedView.ApplyModifiedPropertiesWithoutUndo();
+            }
+            foreach (TMP_Text text in view.GetComponentsInChildren<TMP_Text>(true))
+                if (text.text == "The online match keeps running.") text.text = "The match keeps running.";
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            VerifySoloPractice(view);
+        }
+
+        private static void VerifySoloPractice(SessionScreen_view view)
+        {
+            var serializedView = new SerializedObject(view);
+            SerializedProperty bindings = serializedView.FindProperty("_bindings");
+            int count = 0;
+            for (int i = 0; i < bindings.arraySize; i++)
+            {
+                SerializedProperty binding = bindings.GetArrayElementAtIndex(i);
+                if (binding.FindPropertyRelative("Action").intValue != (int)SESSION_ACTION.SOLO) continue;
+                Button soloBtn = (Button)binding.FindPropertyRelative("TargetBtn").objectReferenceValue;
+                if (soloBtn == null || soloBtn.GetComponentInChildren<TMP_Text>(true) == null || !soloBtn.gameObject.activeSelf) throw new InvalidOperationException("Solo Practice must have a saved active TMP button.");
+                count++;
+            }
+            if (count != 1) throw new InvalidOperationException("Expected exactly one Solo Practice action.");
+            Debug.Log("[Development] PASS: saved Solo Practice button and action binding.");
+        }
+
         [MenuItem("DEAD CROWD/Development/Verify Main Scene")]
         public static void Verify()
         {
@@ -222,6 +288,7 @@ namespace DeadCrowd.Editor
             SessionScreen_view view = UnityEngine.Object.FindFirstObjectByType<SessionScreen_view>();
             if (view == null || !view.ReferencesValid()) throw new InvalidOperationException("Canvas UI references are incomplete.");
             SessionUiMigration.VerifyText(view);
+            VerifySoloPractice(view);
             if (UnityEngine.Object.FindObjectsByType<EventSystem>(FindObjectsSortMode.None).Length != 1) throw new InvalidOperationException("Expected one UI event system.");
             CrowdMatch match = UnityEngine.Object.FindFirstObjectByType<CrowdMatch>();
             if (match == null || match.GetComponent<NetworkObject>().SortKey == 0) throw new InvalidOperationException("Main Scene must retain a baked authoritative match.");
@@ -232,7 +299,11 @@ namespace DeadCrowd.Editor
         [MenuItem("DEAD CROWD/Development/Build Windows")]
         public static void VerifyAndBuild()
         {
-            OpenOrCreate(); SessionUiMigration.Migrate(); Verify();
+            CrowdContentEditor.CreateDefaults();
+            CrowdContentValidationEditor.ValidateActive();
+            OpenOrCreate(); CrowdContentEditor.InstallMapTools(); SessionUiMigration.Migrate(); InstallSoloPractice(); Verify();
+            DeadCrowd.Prototype.Editor.CrowdPrototypeEditor.VerifyBackstabRules();
+            DeadCrowd.Prototype.Editor.CrowdPrototypeEditor.VerifyExposureRecoveryRules();
             Directory.CreateDirectory("Builds/Development");
             BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { SCENE_PATH }, locationPathName = "Builds/Development/DEAD-CROWD.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.Development });
             if (report.summary.result != BuildResult.Succeeded) throw new InvalidOperationException("Main Scene build failed: " + report.summary.result);

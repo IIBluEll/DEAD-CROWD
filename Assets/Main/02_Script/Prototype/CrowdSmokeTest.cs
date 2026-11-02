@@ -88,7 +88,7 @@ namespace DeadCrowd.Prototype
                 if (_capturePath != null && !_captured && Time.realtimeSinceStartup - _playStarted > 0.5f)
                 {
                     _captured = true;
-                    ScreenCapture.CaptureScreenshot(_capturePath);
+                    CaptureFrame(_capturePath);
                 }
                 _observedExposure |= local.Exposed;
                 _observedDamage |= match.NpcCount() < _initialNpcCount || local.Health < 100;
@@ -149,6 +149,23 @@ namespace DeadCrowd.Prototype
                 }
                 if (_bootstrap.Runner.IsServer && Time.realtimeSinceStartup - _resultSeenTime > 2f) match.RPC_ReturnToLobby(match.RoundId);
             }
+        }
+
+        private static void CaptureFrame(string path)
+        {
+            Camera camera = Camera.main;
+            var target = new RenderTexture(1280, 720, 24);
+            var texture = new Texture2D(1280, 720, TextureFormat.RGB24, false);
+            RenderTexture previous = RenderTexture.active;
+            try
+            {
+                var request = new UnityEngine.Rendering.Universal.UniversalRenderPipeline.SingleCameraRequest { destination = target };
+                UnityEngine.Rendering.RenderPipeline.SubmitRenderRequest(camera, request);
+                RenderTexture.active = target;
+                texture.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0); texture.Apply();
+                System.IO.File.WriteAllBytes(path, texture.EncodeToPNG());
+            }
+            finally { RenderTexture.active = previous; target.Release(); Destroy(target); Destroy(texture); }
         }
 
         private void Finish(bool success, string details)
