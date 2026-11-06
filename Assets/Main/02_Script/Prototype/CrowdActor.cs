@@ -41,12 +41,14 @@ namespace DeadCrowd.Prototype
         [Networked] public int Magazine { get; set; }
         [Networked] public int Reserve { get; set; }
         [Networked] public NetworkBool Aiming { get; set; }
+        [Networked] public float PistolPitch { get; set; }
         [Networked] public int LastAttackSequence { get; set; }
         [Networked] public int LastReloadSequence { get; set; }
         [Networked] public int ActionSequence { get; set; }
         [Networked] public ACTION_STATE ActionEvent { get; set; }
         [Networked] public int DamageSequence { get; set; }
         [Networked] public int ShotSequence { get; set; }
+        [Networked] public Vector3 ShotStart { get; set; }
         [Networked] public Vector3 ShotEnd { get; set; }
         [Networked] public int DeathTick { get; set; }
         [Networked] public DEATH_CAUSE DeathCause { get; set; }
@@ -57,6 +59,7 @@ namespace DeadCrowd.Prototype
         private NetworkTransform _networkTransform;
         private CrowdMatch _match;
         private NavMeshPath _path;
+        private Vector3 _lastValidPosition;
         private Vector3[] _corners;
         private int _cornerIndex;
         private int _pathTick;
@@ -68,8 +71,6 @@ namespace DeadCrowd.Prototype
         private LineRenderer _shotLine;
         private MaterialPropertyBlock _propertyBlock;
 
-        public CrowdInput CurrentInput;
-        public bool HasCurrentInput;
         public bool DangerThisTick;
         public float ExposureAddition;
         public CrowdActor RememberedTarget;
@@ -86,6 +87,13 @@ namespace DeadCrowd.Prototype
 
         public bool Alive => Object != null && Object.IsValid && Health > 0;
         public Vector3 Center => transform.position + Vector3.up * 0.9f;
+        public Quaternion PistolRotation => transform.rotation * Quaternion.Euler(PistolPitch, 0f, 0f);
+
+        // Match the standard pistol rig's shoulder and barrel offsets without sampling animation in a simulation tick.
+        private static readonly Vector3 PISTOL_SHOULDER_OFFSET = new Vector3(0.3f, 1.32f, 0f);
+        private static readonly Vector3 PISTOL_BARREL_OFFSET = new Vector3(0f, -0.04f, 0.71f);
+
+        public Vector3 GetPistolMuzzle(Quaternion pistolRotation) => transform.position + transform.rotation * PISTOL_SHOULDER_OFFSET + pistolRotation * PISTOL_BARREL_OFFSET;
 
         private void Awake()
         {
@@ -100,9 +108,10 @@ namespace DeadCrowd.Prototype
         {
             _match = FindFirstObjectByType<CrowdMatch>();
             _match.Register(this);
+            _lastValidPosition = transform.position;
             _lastDamageSequence = DamageSequence;
             _lastShotSequence = ShotSequence;
-            var profile = DeadCrowd.Content.CrowdContent.Catalog.Presentation;
+            var profile = DeadCrowd.Content.CrowdContent.Presentation;
             if (profile != null && profile.CommonVisualPrefab != null)
             {
                 try
@@ -145,6 +154,7 @@ namespace DeadCrowd.Prototype
             Action = ACTION_STATE.NONE;
             HitPending = false;
             Aiming = false;
+            PistolPitch = 0f;
             Magazine = CrowdRules.MAGAZINE;
             Reserve = CrowdRules.RESERVE;
             ConfirmPresentation();
@@ -161,10 +171,8 @@ namespace DeadCrowd.Prototype
             RecoveryUntilTick = 0;
             ProgressPosition = position;
             _corners = null;
-            _controller.enabled = false;
-            _networkTransform.Teleport(position, rotation);
-            transform.SetPositionAndRotation(position, rotation);
-            _controller.enabled = true;
+            _lastValidPosition = position;
+            Teleport(position, rotation);
             if (_presentation != null) _presentation.ResetPresentation();
         }
 
@@ -176,6 +184,32 @@ namespace DeadCrowd.Prototype
             _controller.enabled = true;
             if (facing.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(facing), turnSpeed * deltaTime);
             _controller.Move((Vector3.ClampMagnitude(direction, 1f) * speed + Vector3.down * 2f) * deltaTime);
+            if (HasStateAuthority) RecoverOutsideMap();
+        }
+
+        private void RecoverOutsideMap()
+        {
+            Vector3 position = transform.position;
+            bool grounded = _controller.isGrounded;
+            // Spawn bounds are inset from the arena walls. The baked NavMesh covers the outer walkways.
+            bool insideSpawnArea = grounded && Mathf.Abs(position.y - _lastValidPosition.y) <= _controller.stepOffset && DeadCrowd.Content.CrowdContent.Map.ContainsSpawnPosition(position);
+            bool finite = float.IsFinite(position.x) && float.IsFinite(position.y) && float.IsFinite(position.z);
+            if (finite && (insideSpawnArea || NavMesh.SamplePosition(position, out _, _controller.radius * 2f, NavMesh.AllAreas)))
+            {
+                if (grounded) _lastValidPosition = position;
+                return;
+            }
+            Debug.LogWarning($"[Crowd] Recovered out-of-map actor. round={_match.RoundId}, tick={_match.CurrentTick}, actor={StableId}, position={position}, lastValid={_lastValidPosition}");
+            Teleport(_lastValidPosition, transform.rotation);
+            _corners = null;
+        }
+
+        private void Teleport(Vector3 position, Quaternion rotation)
+        {
+            _controller.enabled = false;
+            _networkTransform.Teleport(position, rotation);
+            transform.SetPositionAndRotation(position, rotation);
+            _controller.enabled = true;
         }
 
         public Vector3 PathDirection(Vector3 goal, int tick)
@@ -262,7 +296,7 @@ namespace DeadCrowd.Prototype
                 _shotLine.enabled = Time.time < _shotUntil;
                 if (_shotLine.enabled)
                 {
-                    _shotLine.SetPosition(0, Center + transform.forward * 0.4f);
+                    _shotLine.SetPosition(0, ShotStart);
                     _shotLine.SetPosition(1, ShotEnd);
                 }
             }

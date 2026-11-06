@@ -29,13 +29,11 @@ namespace DeadCrowd.Content
         [Min(0)] public float MELEE_CYCLE = 0.85f;
         [Min(0)] public int MELEE_DAMAGE = 60;
         [Header("Pistol")]
-        [Min(0)] public int GUN_DAMAGE = 55;
         [Min(0)] public float GUN_RANGE = 25f;
         [Min(0)] public float GUN_INTERVAL = 0.35f;
         [Min(0)] public float RELOAD_SECONDS = 1.8f;
         [Min(0)] public int MAGAZINE = 6;
         [Min(0)] public int RESERVE = 12;
-        [Min(0)] public float AIM_TOLERANCE = 5f;
         [Header("Exposure")]
         [Min(0)] public float EXP_MELEE = 35f;
         [Min(0)] public float EXP_SHOT = 60f;

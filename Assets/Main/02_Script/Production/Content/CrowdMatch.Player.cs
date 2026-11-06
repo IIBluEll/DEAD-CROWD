@@ -8,12 +8,11 @@ namespace DeadCrowd.Prototype
     {
         private void SimulatePlayer(CrowdActor actor, bool boundary, bool authority = true)
         {
-            actor.HasCurrentInput = Runner.TryGetInputForPlayer(actor.Object.InputAuthority, out CrowdInput input) && input.RoundId == RoundId;
-            if (!actor.HasCurrentInput) input = new CrowdInput { Yaw = actor.transform.eulerAngles.y, AttackSequence = actor.LastAttackSequence, ReloadSequence = actor.LastReloadSequence };
+            bool hasCurrentInput = Runner.TryGetInputForPlayer(actor.Object.InputAuthority, out CrowdInput input) && input.RoundId == RoundId;
+            if (!hasCurrentInput) input = new CrowdInput { Yaw = actor.transform.eulerAngles.y, AttackSequence = actor.LastAttackSequence, ReloadSequence = actor.LastReloadSequence };
             if (!float.IsFinite(input.Yaw) || !float.IsFinite(input.Pitch) || !float.IsFinite(input.Move.x) || !float.IsFinite(input.Move.y)) input = new CrowdInput { Yaw = actor.transform.eulerAngles.y, AttackSequence = actor.LastAttackSequence, ReloadSequence = actor.LastReloadSequence };
             input.Pitch = Mathf.Clamp(input.Pitch, -60f, 30f);
             input.Move = Vector2.ClampMagnitude(input.Move, 1f);
-            actor.CurrentInput = input;
             CompleteAction(actor);
             bool attack = input.AttackSequence != actor.LastAttackSequence;
             bool reload = input.ReloadSequence != actor.LastReloadSequence;
@@ -25,6 +24,7 @@ namespace DeadCrowd.Prototype
             bool reloadValid = unlocked && reload && actor.Magazine < CrowdRules.MAGAZINE && actor.Reserve > 0;
             bool meleeIntent = unlocked && attack && !input.Aim && !reloadValid;
             actor.Aiming = !reloadValid && (actor.Action == ACTION_STATE.NONE || actor.Action == ACTION_STATE.SHOT) && input.Aim;
+            if (actor.Aiming) actor.PistolPitch = input.Pitch;
             Vector3 direction = Quaternion.Euler(0f, input.Yaw, 0f) * new Vector3(input.Move.x, 0f, input.Move.y);
             bool sprint = unlocked && !reloadValid && !attack && !actor.Aiming && input.Sprint && direction.sqrMagnitude > 0f;
             float speed = actor.Action == ACTION_STATE.MELEE || meleeIntent ? CrowdRules.MELEE_SPEED : actor.Aiming ? CrowdRules.AIM_SPEED : sprint ? CrowdRules.SPRINT_SPEED : CrowdRules.WALK_SPEED;
@@ -52,7 +52,7 @@ namespace DeadCrowd.Prototype
                     EmitNoise(actor.transform.position, CrowdRules.NOISE_MELEE);
                 }
             }
-            else if (unlocked && attack && input.Aim && actor.Magazine > 0 && Vector3.Angle(actor.transform.forward, Quaternion.Euler(0f, input.Yaw, 0f) * Vector3.forward) <= CrowdRules.AIM_TOLERANCE)
+            else if (unlocked && attack && input.Aim && actor.Magazine > 0)
             {
                 actor.Action = ACTION_STATE.SHOT;
                 actor.ActionEndTick = CurrentTick + CrowdRules.Ticks(CrowdRules.GUN_INTERVAL, Runner.DeltaTime);
@@ -90,12 +90,7 @@ namespace DeadCrowd.Prototype
             actor.HitTick = CurrentTick + CrowdRules.Ticks(windup, Runner.DeltaTime);
             actor.ActionEndTick = CurrentTick + CrowdRules.Ticks(cycle, Runner.DeltaTime);
             actor.BackstabCandidate = null;
-            if (!actor.IsNpc && action == ACTION_STATE.MELEE && CrowdRules.BACKSTAB_WINDUP_GRACE)
-            {
-                Physics.SyncTransforms();
-                CrowdActor target = SelectMeleeTarget(actor);
-                if (target != null && CrowdRules.IsBackstab(target.transform.forward, actor.transform.position - target.transform.position)) actor.BackstabCandidate = target;
-            }
+            if (!actor.IsNpc && action == ACTION_STATE.MELEE && CrowdRules.BACKSTAB_WINDUP_GRACE) BACKSTAB_OPENINGS.Add(actor);
         }
 
         private void AddExposure(CrowdActor actor, float amount) { actor.DangerThisTick = true; actor.ExposureAddition += amount; }

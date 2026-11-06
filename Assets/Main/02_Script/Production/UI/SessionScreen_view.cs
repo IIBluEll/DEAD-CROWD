@@ -28,6 +28,7 @@ namespace DeadCrowd.UI
         [SerializeField] private Image _exposureImg;
         [SerializeField] private Slider _sensitivitySlider;
         [SerializeField] private Slider _volumeSlider;
+        private TextMeshProUGUI _pistolImpactTxt;
 
         public event Action<SESSION_ACTION> Requested;
         public string InviteCode => _codeInput.text;
@@ -61,6 +62,34 @@ namespace DeadCrowd.UI
         {
             TMP_Text text = _texts[(int)field];
             if (text != null && text.text != value) text.text = value;
+        }
+
+        public void ShowPistolImpact(Vector2? viewport)
+        {
+            if (!viewport.HasValue)
+            {
+                if (_pistolImpactTxt != null && _pistolImpactTxt.gameObject.activeSelf) _pistolImpactTxt.gameObject.SetActive(false);
+                return;
+            }
+
+            if (_pistolImpactTxt == null)
+            {
+                TMP_Text crosshairTxt = _texts[(int)SESSION_TEXT.CROSSHAIR];
+                _pistolImpactTxt = new GameObject("Pistol Impact Reticle", typeof(RectTransform)).AddComponent<TextMeshProUGUI>();
+                _pistolImpactTxt.transform.SetParent(crosshairTxt.transform.parent, false);
+                _pistolImpactTxt.rectTransform.sizeDelta = new Vector2(40f, 40f);
+                _pistolImpactTxt.font = crosshairTxt.font;
+                _pistolImpactTxt.fontSize = 28f;
+                _pistolImpactTxt.alignment = TextAlignmentOptions.Midline;
+                _pistolImpactTxt.text = "o";
+                _pistolImpactTxt.raycastTarget = false;
+            }
+
+            RectTransform impactRectTrans = _pistolImpactTxt.rectTransform;
+            impactRectTrans.anchorMin = viewport.Value;
+            impactRectTrans.anchorMax = viewport.Value;
+            impactRectTrans.anchoredPosition = Vector2.zero;
+            if (!_pistolImpactTxt.gameObject.activeSelf) _pistolImpactTxt.gameObject.SetActive(true);
         }
 
         public void Show(SessionModel_model model)

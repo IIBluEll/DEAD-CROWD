@@ -23,6 +23,7 @@ namespace DeadCrowd.Prototype
         private GUIStyle _titleStyle;
         private GUIStyle _labelStyle;
         private GUIStyle _smallStyle;
+        private GUIStyle _reticleStyle;
 
         public CrowdConnectionService Connection => _connection;
         public NetworkRunner Runner => _connection?.Runner;
@@ -33,7 +34,8 @@ namespace DeadCrowd.Prototype
         public bool MenuOpen => _controls.MenuOpen;
         public bool LocalAim => _controls.Aiming;
         public float MouseSensitivity => _controls.Sensitivity;
-        public float AimYaw => _controls.Yaw;
+        public int SpectatedSlot => CAMERA.SpectatedSlot;
+        public Vector2? PistolImpactViewport => CAMERA.PistolImpactViewport;
 
         public void UseCanvasUI() { _showPrototypeGui = false; }
         public void SetMenuOpen(bool open) { _controls.MenuOpen = open; }
@@ -99,6 +101,7 @@ namespace DeadCrowd.Prototype
                 _titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 36, fontStyle = FontStyle.Bold };
                 _labelStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, wordWrap = true };
                 _smallStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, wordWrap = true };
+                _reticleStyle = new GUIStyle(_labelStyle) { alignment = TextAnchor.MiddleCenter };
             }
             GUI.matrix = Matrix4x4.Scale(new Vector3(Screen.width / 1280f, Screen.height / 720f, 1f));
             GUI.skin.button.fontSize = 18;
@@ -170,12 +173,18 @@ namespace DeadCrowd.Prototype
             }
             GUILayout.EndArea();
             GUI.Label(new Rect(20, 660, 900, 50), "WASD move   SHIFT sprint   LMB melee   RMB aim + LMB fire   R reload   ESC menu", _smallStyle);
-            if (local != null && !local.Alive) GUI.Label(new Rect(400, 580, 600, 60), $"SPECTATING  |  Cause: {local.DeathCause}\nA / D switch survivor", _labelStyle);
+            if (local != null && !local.Alive)
+            {
+                string status = $"ELIMINATED  |  Cause: {local.DeathCause}";
+                if (SpectatedSlot > 0) status += $"\nSpectating Slot {SpectatedSlot} - A / D to switch";
+                GUI.Label(new Rect(400, 580, 600, 60), status, _labelStyle);
+            }
             if (local != null && local.Alive && _controls.Aiming)
             {
-                float angle = Vector3.Angle(local.transform.forward, Quaternion.Euler(0f, _controls.Yaw, 0f) * Vector3.forward);
-                string crosshair = local.Action == ACTION_STATE.RELOAD ? "RELOADING" : local.Magazine == 0 ? "EMPTY" : angle > CrowdRules.AIM_TOLERANCE ? "ALIGNING" : "+";
-                GUI.Label(new Rect(590, 350, 200, 45), crosshair, _labelStyle);
+                if (PistolImpactViewport is Vector2 impact)
+                    GUI.Label(new Rect(impact.x * 1280f - 20f, (1f - impact.y) * 720f - 20f, 40f, 40f), "o", _reticleStyle);
+                string crosshair = local.Action == ACTION_STATE.RELOAD ? "RELOADING" : local.Magazine == 0 ? "EMPTY" : "+";
+                GUI.Label(new Rect(540, 337.5f, 200, 45), crosshair, _reticleStyle);
             }
             if (match.State == ROUND_STATE.COUNTDOWN) GUI.Label(new Rect(560, 270, 500, 100), $"{Mathf.Max(1, Mathf.CeilToInt((match.CountdownEndTick - match.CurrentTick) * Runner.DeltaTime))}\nCamera only", _titleStyle);
             if (match.State == ROUND_STATE.RESULT)

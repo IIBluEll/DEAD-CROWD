@@ -9,7 +9,11 @@ namespace DeadCrowd.Content
         [SerializeField] private GameObject _weaponObj;
         [SerializeField] private GameObject _meleeWeaponObj;
         [SerializeField] private Renderer[] _bodyRenderers;
+        [SerializeField] private SkinnedMeshRenderer[] _bodyVariants;
+        [SerializeField] private bool _orientPistolToAim;
         private CrowdActor _actor;
+        private Transform _pistolArmTrans;
+        private Quaternion _pistolRestRotation;
         private CrowdMatch _match;
         private int _roundId;
         private CrowdPresentationProfile _profile;
@@ -23,12 +27,15 @@ namespace DeadCrowd.Content
         private int _damage, _shot, _action;
         private bool _alive;
         private MaterialPropertyBlock _block;
+        private SkinnedMeshRenderer _activeBodyVariant;
         public bool Configured => _bodyAnimator != null && _bodyAnimator.runtimeAnimatorController != null && _bodyRenderers != null &&
             GetComponentsInChildren<Collider>(true).Length == 0 && GetComponentsInChildren<Fusion.NetworkObject>(true).Length == 0;
 
         public void Initialize(CrowdActor actor, CrowdPresentationProfile profile)
         {
             _actor = actor; _profile = profile; _match = FindFirstObjectByType<CrowdMatch>(); _roundId = _match != null ? _match.RoundId : -1; _previous = actor.transform.position;
+            if (_weaponObj != null && _weaponObj.name == "Pistol" && _weaponObj.transform.parent?.name == "RightArm") _pistolArmTrans = _weaponObj.transform.parent;
+            if (_orientPistolToAim && _weaponObj != null) _pistolRestRotation = _weaponObj.transform.localRotation;
             _damage = actor.DamageSequence; _shot = actor.ShotSequence; _action = actor.ActionSequence; _alive = actor.Alive;
             _block = new MaterialPropertyBlock();
             _audio = gameObject.AddComponent<AudioSource>();
@@ -47,6 +54,7 @@ namespace DeadCrowd.Content
                 if (!_bodyAnimator.HasState(0, Animator.StringToHash(state)) && !_bodyAnimator.HasState(0, Animator.StringToHash(_bodyAnimator.GetLayerName(0) + "." + state))) throw new System.InvalidOperationException("Missing base-layer Animator state: " + state);
             _warningAudio = gameObject.AddComponent<AudioSource>(); _warningAudio.spatialBlend = 0f;
             _wasExposed = actor.Exposed; _magazine = actor.ConfirmedMagazine;
+            SelectBodyVariant();
         }
 
         private void RequireParameter(string name, AnimatorControllerParameterType type)
@@ -63,6 +71,17 @@ namespace DeadCrowd.Content
             _alive = _actor.Alive; _wasExposed = _actor.Exposed; _magazine = _actor.ConfirmedMagazine;
             _damage = _actor.DamageSequence; _shot = _actor.ShotSequence; _action = _actor.ActionSequence;
             _bodyAnimator.Rebind(); _bodyAnimator.Update(0f);
+            SelectBodyVariant();
+        }
+
+        private void SelectBodyVariant()
+        {
+            if (_bodyVariants == null || _bodyVariants.Length == 0) return;
+            int seed = _match != null ? _match.Seed : 0;
+            uint index = unchecked((uint)(_actor.StableId - 1 + seed)) % (uint)_bodyVariants.Length;
+            _activeBodyVariant = _bodyVariants[index];
+            foreach (SkinnedMeshRenderer variant in _bodyVariants)
+                variant.gameObject.SetActive(variant == _activeBodyVariant);
         }
 
         private void Play(AudioClip clip) { if (clip != null) _audio.PlayOneShot(clip, _profile.Volume); }
@@ -97,6 +116,19 @@ namespace DeadCrowd.Content
                 _bodyAnimator.Play(state, 0, phase);
                 _bodyAnimator.Update(0f);
             }
+            bool pistolPose = alive && (action == ACTION_STATE.SHOT || action == ACTION_STATE.NONE && _actor.Aiming);
+            if (_orientPistolToAim && _weaponObj != null)
+            {
+                if (pistolPose) _weaponObj.transform.rotation = _actor.PistolRotation;
+                else _weaponObj.transform.localRotation = _pistolRestRotation;
+            }
+            else if (pistolPose && _pistolArmTrans != null)
+            {
+                Quaternion weaponLocalRotation = _weaponObj.transform.localRotation;
+                Quaternion weaponRotation = _actor.PistolRotation;
+                if (action == ACTION_STATE.SHOT) weaponRotation *= _pistolArmTrans.localRotation * weaponLocalRotation;
+                _pistolArmTrans.rotation = weaponRotation * Quaternion.Inverse(weaponLocalRotation);
+            }
             if (_weaponObj != null) _weaponObj.SetActive(alive && (_actor.Aiming || _actor.Action == ACTION_STATE.SHOT || _actor.Action == ACTION_STATE.RELOAD));
             if (_meleeWeaponObj != null) _meleeWeaponObj.SetActive(alive && _actor.Action == ACTION_STATE.MELEE);
             if (alive && moved < 0.5f) { _distance += moved; if (_distance >= _profile.FootstepDistance) { _distance = 0f; Play(_profile.Footstep); } }
@@ -115,7 +147,9 @@ namespace DeadCrowd.Content
             _alive = alive;
             bool flashing = Time.time < _flashUntil;
             _block.SetColor("_BaseColor", flashing ? _profile.HitColor : _profile.BodyColor);
-            foreach (Renderer body in _bodyRenderers) if (body != null) body.SetPropertyBlock(_profile.UseMaterialColors && !flashing ? null : _block);
+            MaterialPropertyBlock block = _profile.UseMaterialColors && !flashing ? null : _block;
+            if (_activeBodyVariant != null) _activeBodyVariant.SetPropertyBlock(block);
+            else foreach (Renderer body in _bodyRenderers) if (body != null) body.SetPropertyBlock(block);
         }
     }
 }

@@ -22,6 +22,8 @@ namespace DeadCrowd.Content
         [Min(0.6f)] public float BodySeparation = 0.65f;
         public CrowdStartSet[] StartSets;
 
+        public bool ContainsSpawnPosition(Vector3 position) => position.x >= BoundsMin.x && position.x <= BoundsMax.x && position.z >= BoundsMin.y && position.z <= BoundsMax.y;
+
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(MapVersion) || BoundsMax.x <= BoundsMin.x || BoundsMax.y <= BoundsMin.y || SpawnAttempts < 1 || BodySeparation < 0.6f || NpcStartRadius <= 0f || NearbyNpcsPerPlayer < 0) throw new InvalidOperationException("Invalid map bounds or spawn settings.");
@@ -35,7 +37,7 @@ namespace DeadCrowd.Content
                 for (int i = 0; i < set.Positions.Length; i++)
                     for (int j = i + 1; j < set.Positions.Length; j++)
                         if (Vector3.Distance(set.Positions[i], set.Positions[j]) < BodySeparation) throw new InvalidOperationException("Overlapping starts in " + set.Name);
-                foreach (Vector3 p in set.Positions) if (!float.IsFinite(p.x) || !float.IsFinite(p.y) || !float.IsFinite(p.z) || p.x < BoundsMin.x || p.x > BoundsMax.x || p.z < BoundsMin.y || p.z > BoundsMax.y) throw new InvalidOperationException("Start outside map bounds.");
+                foreach (Vector3 p in set.Positions) if (!float.IsFinite(p.y) || !ContainsSpawnPosition(p)) throw new InvalidOperationException("Start outside map bounds.");
             }
             if (!duel || !ffa) throw new InvalidOperationException("Provide both duel and FFA start sets.");
         }

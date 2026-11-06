@@ -25,6 +25,8 @@ namespace DeadCrowd.UI
             Refresh();
         }
 
+        private void LateUpdate() => _view.ShowPistolImpact(_session.Runtime.PistolImpactViewport);
+
         private void Refresh()
         {
             _session.ReadModel(MODEL);

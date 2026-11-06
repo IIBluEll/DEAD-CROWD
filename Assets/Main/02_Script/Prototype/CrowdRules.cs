@@ -24,7 +24,7 @@ namespace DeadCrowd.Prototype
     // Initial values from design v1.0, section 17. This is the prototype's single data source.
     public static class CrowdRules
     {
-        public const string BUILD_VERSION = "dead-crowd-development-9";
+        public const string BUILD_VERSION = "dead-crowd-development-12";
         public static int LOAD_TIMEOUT_SECONDS => DeadCrowd.Content.CrowdContent.Settings.LOAD_TIMEOUT_SECONDS;
         public const string CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         public static int MAX_HP => DeadCrowd.Content.CrowdContent.Settings.MAX_HP;
@@ -43,13 +43,11 @@ namespace DeadCrowd.Prototype
         public static float MELEE_WINDUP => DeadCrowd.Content.CrowdContent.Settings.MELEE_WINDUP;
         public static float MELEE_CYCLE => DeadCrowd.Content.CrowdContent.Settings.MELEE_CYCLE;
         public static int MELEE_DAMAGE => DeadCrowd.Content.CrowdContent.Settings.MELEE_DAMAGE;
-        public static int GUN_DAMAGE => DeadCrowd.Content.CrowdContent.Settings.GUN_DAMAGE;
         public static float GUN_RANGE => DeadCrowd.Content.CrowdContent.Settings.GUN_RANGE;
         public static float GUN_INTERVAL => DeadCrowd.Content.CrowdContent.Settings.GUN_INTERVAL;
         public static float RELOAD_SECONDS => DeadCrowd.Content.CrowdContent.Settings.RELOAD_SECONDS;
         public static int MAGAZINE => DeadCrowd.Content.CrowdContent.Settings.MAGAZINE;
         public static int RESERVE => DeadCrowd.Content.CrowdContent.Settings.RESERVE;
-        public static float AIM_TOLERANCE => DeadCrowd.Content.CrowdContent.Settings.AIM_TOLERANCE;
         public static float EXP_MELEE => DeadCrowd.Content.CrowdContent.Settings.EXP_MELEE;
         public static float EXP_SHOT => DeadCrowd.Content.CrowdContent.Settings.EXP_SHOT;
         public static float EXP_SPRINT => DeadCrowd.Content.CrowdContent.Settings.EXP_SPRINT;

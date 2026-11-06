@@ -11,26 +11,31 @@ namespace DeadCrowd.Content
     {
         private static CrowdGameSettings s_settings;
         private static CrowdMapProfile s_map;
+        private static CrowdPresentationProfile s_presentation;
         public static CrowdContentCatalog Catalog => Resources.Load<CrowdContentCatalog>("Crowd/ContentCatalog");
         public static CrowdGameSettings Settings { get { Ensure(); return s_settings; } }
         public static CrowdMapProfile Map { get { Ensure(); return s_map; } }
+        public static CrowdPresentationProfile Presentation { get { Ensure(); return s_presentation; } }
         public static string Signature { get; private set; }
         public static string SessionVersion => Prototype.CrowdRules.BUILD_VERSION + ":" + Signature;
 
         private static void Ensure() { if (s_settings == null || s_map == null) Freeze(); }
         public static void Freeze()
         {
-            CrowdGameSettings source = Catalog != null ? Catalog.GameSettings : null;
-            CrowdMapProfile map = Catalog != null ? Catalog.Map : null;
+            CrowdMapAuthoring authoring = UnityEngine.Object.FindFirstObjectByType<CrowdMapAuthoring>();
+            CrowdContentCatalog catalog = authoring != null && authoring.Catalog != null ? authoring.Catalog : Catalog;
+            CrowdGameSettings source = catalog != null ? catalog.GameSettings : null;
+            CrowdMapProfile map = catalog != null ? catalog.Map : null;
             if (source == null || map == null) throw new InvalidOperationException("Create the default Crowd content assets before playing.");
             source.Validate(); map.Validate();
-            if (Catalog.Presentation == null || Catalog.Presentation.CommonVisualPrefab == null || !Catalog.Presentation.CommonVisualPrefab.Configured)
+            if (catalog.Presentation == null || catalog.Presentation.CommonVisualPrefab == null || !catalog.Presentation.CommonVisualPrefab.Configured)
                 throw new InvalidOperationException("Assign an Animator/body renderers to the visual prefab and remove its Collider/NetworkObject components.");
-            Catalog.Presentation.Validate();
+            catalog.Presentation.Validate();
             if (s_settings != null) UnityEngine.Object.Destroy(s_settings);
             if (s_map != null) UnityEngine.Object.Destroy(s_map);
             s_settings = UnityEngine.Object.Instantiate(source);
             s_map = UnityEngine.Object.Instantiate(map);
+            s_presentation = catalog.Presentation;
             using (SHA256 hash = SHA256.Create())
                 Signature = BitConverter.ToString(hash.ComputeHash(Encoding.UTF8.GetBytes(JsonUtility.ToJson(s_settings) + JsonUtility.ToJson(s_map) + SceneGeometry()))).Replace("-", "");
             Debug.Log("[Content] Session rules/map signature=" + Signature + ", map=" + s_map.MapVersion);

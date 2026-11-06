@@ -27,6 +27,7 @@ namespace DeadCrowd.Prototype
         private readonly List<CrowdActor> ACTORS = new List<CrowdActor>();
         private readonly List<Damage> DAMAGE = new List<Damage>();
         private readonly List<Noise> NOISES = new List<Noise>();
+        private readonly List<CrowdActor> BACKSTAB_OPENINGS = new List<CrowdActor>();
         private readonly HashSet<PlayerRef> ACTIVE_PLAYERS = new HashSet<PlayerRef>();
         private System.Random _random;
         private int _nextId;
@@ -165,6 +166,9 @@ namespace DeadCrowd.Prototype
                 if (!actor.IsNpc) SimulatePlayer(actor, boundary);
             }
             Physics.SyncTransforms();
+            // Use this tick's player poses before NPCs react to attack noise.
+            foreach (CrowdActor actor in BACKSTAB_OPENINGS) CaptureBackstabOpening(actor);
+            BACKSTAB_OPENINGS.Clear();
             foreach (CrowdActor actor in ACTORS)
             {
                 if (!actor.Alive || actor.IsNpc) continue;
@@ -203,21 +207,7 @@ namespace DeadCrowd.Prototype
         private void SynchronizePlayers()
         {
             ACTIVE_PLAYERS.Clear();
-            foreach (PlayerRef player in Runner.ActivePlayers)
-            {
-                ACTIVE_PLAYERS.Add(player);
-                bool exists = false;
-                foreach (CrowdActor actor in ACTORS) if (!actor.IsNpc && actor.Connected && actor.Object.InputAuthority == player) { exists = true; break; }
-                if (exists || State != ROUND_STATE.LOBBY) continue;
-                int slot = 1;
-                while (SlotUsed(slot)) slot++;
-                Transform spawn = _spawnTrans[(slot - 1) % _spawnTrans.Length];
-                int id = ++_nextId;
-                NetworkObject obj = Runner.Spawn(_actorPrefab, spawn.position, spawn.rotation, player, (_, spawned) => spawned.GetComponent<CrowdActor>().Initialize(id, slot, false));
-                Runner.SetPlayerObject(player, obj);
-                ResetReady();
-                Debug.Log($"[Crowd] Player joined slot={slot}");
-            }
+            foreach (PlayerRef player in Runner.ActivePlayers) ACTIVE_PLAYERS.Add(player);
             for (int i = ACTORS.Count - 1; i >= 0; i--)
             {
                 CrowdActor actor = ACTORS[i];
@@ -226,6 +216,22 @@ namespace DeadCrowd.Prototype
                 actor.ApplyDamage(CrowdRules.MAX_HP, DEATH_CAUSE.DISCONNECTED, CurrentTick);
                 ResetReady();
                 if (State == ROUND_STATE.LOBBY) Runner.Despawn(actor.Object);
+            }
+            if (State != ROUND_STATE.LOBBY) return;
+            foreach (PlayerRef player in Runner.ActivePlayers)
+            {
+                bool exists = false;
+                foreach (CrowdActor actor in ACTORS) if (!actor.IsNpc && actor.Connected && actor.Object.InputAuthority == player) { exists = true; break; }
+                if (exists) continue;
+                int slot = 1;
+                while (slot <= RequiredPlayers && SlotUsed(slot)) slot++;
+                if (slot > RequiredPlayers) continue;
+                Transform spawn = _spawnTrans[(slot - 1) % _spawnTrans.Length];
+                int id = ++_nextId;
+                NetworkObject obj = Runner.Spawn(_actorPrefab, spawn.position, spawn.rotation, player, (_, spawned) => spawned.GetComponent<CrowdActor>().Initialize(id, slot, false));
+                Runner.SetPlayerObject(player, obj);
+                ResetReady();
+                Debug.Log($"[Crowd] Player joined slot={slot}");
             }
         }
 
@@ -251,25 +257,34 @@ namespace DeadCrowd.Prototype
             RoundId++;
             Seed = UnityEngine.Random.Range(1, int.MaxValue);
             _random = new System.Random(Seed);
+            var map = DeadCrowd.Content.CrowdContent.Map;
+            int count = ExpectedNpcCount;
+            long nearbyCount = (long)RequiredPlayers * map.NearbyNpcsPerPlayer;
+            if (nearbyCount > count)
+            {
+                HostLoadFailed = true;
+                LastStartFailure = START_FAILURE.LOAD_FAILED;
+                Debug.LogError($"[Content] This mode requires {nearbyCount} nearby NPCs, but only {count} NPCs are configured.");
+                return;
+            }
             var approved = new List<DeadCrowd.Content.CrowdStartSet>();
-            foreach (var set in DeadCrowd.Content.CrowdContent.Map.StartSets)
+            foreach (var set in map.StartSets)
                 if (set.Positions.Length == (Practice ? 2 : RequiredPlayers) && ValidateStartSet(set.Positions)) approved.Add(set);
             if (approved.Count == 0) { HostLoadFailed = true; LastStartFailure = START_FAILURE.LOAD_FAILED; Debug.LogError("[Content] No valid approved start set for this mode."); return; }
             Vector3[] positions = (Vector3[])approved[_random.Next(approved.Count)].Positions.Clone();
             for (int i = positions.Length - 1; i > 0; i--) { int j = _random.Next(i + 1); (positions[i], positions[j]) = (positions[j], positions[i]); }
             foreach (CrowdActor actor in ACTORS)
             {
-                actor.ResetRound(positions[(actor.Slot - 1) % positions.Length], Quaternion.Euler(0f, _random.Next(360), 0f));
+                actor.ResetRound(positions[actor.Slot - 1], Quaternion.Euler(0f, _random.Next(360), 0f));
             }
-            int count = ExpectedNpcCount;
             // Give every start a nearby crowd before distributing the remaining NPCs.
             var starts = new List<Vector3>();
             foreach (CrowdActor actor in ACTORS) if (!actor.IsNpc && actor.Connected) starts.Add(actor.transform.position);
             for (int i = 0; i < count; i++)
             {
-                Vector3 position;
-                bool nearStart = i < starts.Count * DeadCrowd.Content.CrowdContent.Map.NearbyNpcsPerPlayer;
-                if (!TrySpawnPoint(nearStart ? starts[i / DeadCrowd.Content.CrowdContent.Map.NearbyNpcsPerPlayer] : starts[0], nearStart ? DeadCrowd.Content.CrowdContent.Map.NpcStartRadius : 100f, out position))
+                bool nearStart = i < nearbyCount;
+                Vector3 origin = nearStart ? starts[i / map.NearbyNpcsPerPlayer] : starts[0];
+                if (!TrySpawnPoint(origin, nearStart ? map.NpcStartRadius : (float?)null, out Vector3 position))
                 {
                     Debug.LogError("[Crowd] Valid NPC spawn unavailable. Round start cancelled.");
                     HostLoadFailed = true;
@@ -327,17 +342,22 @@ namespace DeadCrowd.Prototype
             return true;
         }
 
-        private bool TrySpawnPoint(Vector3 origin, float radius, out Vector3 position)
+        private bool TrySpawnPoint(Vector3 origin, float? radius, out Vector3 position)
         {
-            for (int attempt = 0; attempt < DeadCrowd.Content.CrowdContent.Map.SpawnAttempts; attempt++)
+            var map = DeadCrowd.Content.CrowdContent.Map;
+            for (int attempt = 0; attempt < map.SpawnAttempts; attempt++)
             {
-                Vector3 point = origin + new Vector3((float)(_random.NextDouble() * 2 - 1) * radius, 0f, (float)(_random.NextDouble() * 2 - 1) * radius);
-                if (radius >= 100f) point = new Vector3(Mathf.Lerp(DeadCrowd.Content.CrowdContent.Map.BoundsMin.x, DeadCrowd.Content.CrowdContent.Map.BoundsMax.x, (float)_random.NextDouble()), 0f, Mathf.Lerp(DeadCrowd.Content.CrowdContent.Map.BoundsMin.y, DeadCrowd.Content.CrowdContent.Map.BoundsMax.y, (float)_random.NextDouble()));
-                if (point.x < DeadCrowd.Content.CrowdContent.Map.BoundsMin.x || point.x > DeadCrowd.Content.CrowdContent.Map.BoundsMax.x || point.z < DeadCrowd.Content.CrowdContent.Map.BoundsMin.y || point.z > DeadCrowd.Content.CrowdContent.Map.BoundsMax.y || !NavMesh.SamplePosition(point, out NavMeshHit hit, 0.8f, NavMesh.AllAreas)) continue;
+                float x = (float)_random.NextDouble();
+                float z = (float)_random.NextDouble();
+                Vector3 point = radius.HasValue
+                    ? origin + new Vector3(Mathf.Lerp(-radius.Value, radius.Value, x), 0f, Mathf.Lerp(-radius.Value, radius.Value, z))
+                    : new Vector3(Mathf.Lerp(map.BoundsMin.x, map.BoundsMax.x, x), origin.y, Mathf.Lerp(map.BoundsMin.y, map.BoundsMax.y, z));
+                if (!map.ContainsSpawnPosition(point) || !NavMesh.SamplePosition(point, out NavMeshHit hit, 0.8f, NavMesh.AllAreas)) continue;
                 point = hit.position;
+                if (!map.ContainsSpawnPosition(point) || radius.HasValue && CrowdRules.Flat(point - origin).sqrMagnitude > radius.Value * radius.Value) continue;
                 if (Physics.CheckCapsule(point + Vector3.up * 0.4f, point + Vector3.up * 1.4f, 0.32f, CrowdRules.WORLD_MASK)) continue;
                 bool overlaps = false;
-                foreach (CrowdActor actor in ACTORS) if (actor.Alive && CrowdRules.Flat(actor.transform.position - point).sqrMagnitude < DeadCrowd.Content.CrowdContent.Map.BodySeparation * DeadCrowd.Content.CrowdContent.Map.BodySeparation) { overlaps = true; break; }
+                foreach (CrowdActor actor in ACTORS) if (actor.Alive && CrowdRules.Flat(actor.transform.position - point).sqrMagnitude < map.BodySeparation * map.BodySeparation) { overlaps = true; break; }
                 if (overlaps) continue;
                 var path = new NavMeshPath();
                 if (!NavMesh.CalculatePath(origin, point, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) continue;

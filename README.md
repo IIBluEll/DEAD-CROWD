@@ -21,7 +21,7 @@
 - [본 개발 작업계획과 현재 구현 범위](Docs/DEAD_CROWD_본개발_작업계획.md)
 - 실행 Scene: `Assets/Main/01_Scene/DeadCrowd.unity`
 - 저장된 영어 TMP Canvas·UI MVP와 접속 서비스·참가자별 로딩 확인을 연결했습니다. D3에서 입력·카메라 분리와 본인 이동 예측을 연결했으며, 실제 두 PC·아트·통합 검증은 후속 단계입니다.
-- 네트워크 프로토콜은 `dead-crowd-development-9`입니다. 참가자 모두 새 개발 빌드를 사용해야 합니다.
+- 네트워크 프로토콜은 `dead-crowd-development-12`입니다. 참가자 모두 새 개발 빌드를 사용해야 합니다.
 - 생성·검증·Windows 빌드 메뉴: `DEAD CROWD > Development`
 
 - [수치·캐릭터·소리·맵 커스텀 가이드](Docs/DEAD_CROWD_커스텀_가이드.md)
@@ -32,3 +32,9 @@
 - [혼자 플레이: Solo Practice](Docs/DEAD_CROWD_솔로_플레이.md) — 타이틀에서 서버 접속 없이 시작하고, 결과 화면에서 다시 플레이할 수 있습니다.
 - [후방 즉사 판정 v8 변경](Docs/DEAD_CROWD_후방_판정_v8.md)
 - [노출 회복 대기 분리 v9 변경](Docs/DEAD_CROWD_노출_회복_v9.md)
+
+## Synty 타운 시험 씬
+
+`Assets/Main/01_Scene/DeadCrowdSyntyTown.unity`를 Unity에서 열고 Play를 누른 뒤 **Solo Practice**를 선택합니다. PolygonTown Demo의 전체 지형과 오브젝트 배치를 사용합니다. 플레이어와 NPC는 PolygonCityZombies 외형 12종과 Humanoid 모션을 공용으로 사용합니다. 라운드 Seed와 캐릭터 ID로 외형을 정합니다.
+
+타운 전용 `TownGameSettings`는 솔로·1vs1에서 NPC 100마리, 4인전에서 140마리를 생성합니다. 시작점 10m 안에 참가자당 8마리를 먼저 배치한 뒤, 나머지를 도로와 건물이 있는 구역에 분산합니다. `TownCatalog.asset`에서 맵과 설정을 선택하며 전체 NavMesh는 씬의 `Polygon Town Demo` 루트에 연결돼 있습니다. 기본 Windows 빌드 메뉴는 `DeadCrowd.unity`를 빌드합니다.

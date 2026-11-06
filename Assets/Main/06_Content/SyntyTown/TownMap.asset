@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fdd3cda3ada843d5a9d491433ce077a7, type: 3}
+  m_Name: TownMap
+  m_EditorClassIdentifier: Assembly-CSharp::DeadCrowd.Content.CrowdMapProfile
+  MapVersion: synty-town-demo-full-1
+  BoundsMin: {x: -100, y: -105}
+  BoundsMax: {x: 70, y: 65}
+  SpawnAttempts: 100
+  NpcStartRadius: 10
+  NearbyNpcsPerPlayer: 8
+  BodySeparation: 0.65
+  StartSets:
+  - Name: Town Duel
+    Positions:
+    - {x: -40.666664, y: 0.08333349, z: -25}
+    - {x: -10, y: 0.08333349, z: -2.5}
+  - Name: Town Four Districts
+    Positions:
+    - {x: -40.666664, y: 0.08333349, z: -25}
+    - {x: -37.5, y: 0.08333349, z: 0}
+    - {x: -15, y: 0.19791779, z: -30}
+    - {x: -10, y: 0.08333349, z: -2.5}

@@ -1,11 +1,18 @@
-using Fusion;
 using UnityEngine;
-using UnityEngine.AI;
 
 namespace DeadCrowd.Prototype
 {
     public sealed partial class CrowdMatch
     {
+        private readonly Collider[] BLOCK_OVERLAPS = new Collider[8];
+        private readonly RaycastHit[] BLOCK_HITS = new RaycastHit[16];
+
+        private void CaptureBackstabOpening(CrowdActor actor)
+        {
+            CrowdActor target = SelectMeleeTarget(actor);
+            if (target != null && CrowdRules.IsBackstab(target.transform.forward, actor.transform.position - target.transform.position)) actor.BackstabCandidate = target;
+        }
+
         private void CollectAttack(CrowdActor actor)
         {
             if (!actor.HitPending || CurrentTick < actor.HitTick) return;
@@ -56,20 +63,34 @@ namespace DeadCrowd.Prototype
         {
             actor = null;
             point = end;
-            foreach (Collider collider in Physics.OverlapSphere(start, 0.015f, ~0, QueryTriggerInteraction.Ignore))
+            Collider[] overlaps = BLOCK_OVERLAPS;
+            int overlapCount = Physics.OverlapSphereNonAlloc(start, 0.015f, overlaps, ~0, QueryTriggerInteraction.Ignore);
+            if (overlapCount == overlaps.Length)
             {
-                CrowdActor overlap = collider.GetComponentInParent<CrowdActor>();
+                overlaps = Physics.OverlapSphere(start, 0.015f, ~0, QueryTriggerInteraction.Ignore);
+                overlapCount = overlaps.Length;
+            }
+            for (int i = 0; i < overlapCount; i++)
+            {
+                CrowdActor overlap = overlaps[i].GetComponentInParent<CrowdActor>();
                 if (overlap == self || overlap != null && !overlap.Alive) continue;
                 actor = overlap;
                 point = start;
                 return true;
             }
             Vector3 direction = end - start;
-            RaycastHit[] hits = Physics.RaycastAll(start, direction.normalized, direction.magnitude, ~0, QueryTriggerInteraction.Ignore);
+            RaycastHit[] hits = BLOCK_HITS;
+            int hitCount = Physics.RaycastNonAlloc(start, direction.normalized, hits, direction.magnitude, ~0, QueryTriggerInteraction.Ignore);
+            if (hitCount == hits.Length)
+            {
+                hits = Physics.RaycastAll(start, direction.normalized, direction.magnitude, ~0, QueryTriggerInteraction.Ignore);
+                hitCount = hits.Length;
+            }
             float distance = float.MaxValue;
             bool blocked = false;
-            foreach (RaycastHit hit in hits)
+            for (int i = 0; i < hitCount; i++)
             {
+                RaycastHit hit = hits[i];
                 CrowdActor candidate = hit.collider.GetComponentInParent<CrowdActor>();
                 if (candidate == self || candidate != null && !candidate.Alive || hit.distance >= distance) continue;
                 distance = hit.distance;
@@ -82,19 +103,28 @@ namespace DeadCrowd.Prototype
 
         private void CollectShot(CrowdActor shooter)
         {
-            Quaternion aim = Quaternion.Euler(shooter.CurrentInput.Pitch, shooter.CurrentInput.Yaw, 0f);
-            Vector3 pivot = shooter.transform.position + Vector3.up * CrowdRules.CAMERA_HEIGHT;
-            Vector3 cameraPosition = pivot - aim * Vector3.forward * CrowdRules.CAMERA_AIM_DISTANCE + aim * Vector3.right * CrowdRules.CAMERA_SHOULDER;
-            Vector3 cameraDelta = cameraPosition - pivot;
-            if (Physics.SphereCast(pivot, CrowdRules.CAMERA_RADIUS, cameraDelta.normalized, out RaycastHit cameraHit, cameraDelta.magnitude, CrowdRules.WORLD_MASK)) cameraPosition = pivot + cameraDelta.normalized * Mathf.Max(0.05f, cameraHit.distance - 0.05f);
-            Vector3 aimPoint = cameraPosition + aim * Vector3.forward * 100f;
-            if (FirstBlock(cameraPosition, aimPoint, shooter, out _, out Vector3 hitPoint)) aimPoint = hitPoint;
-            Vector3 muzzle = shooter.transform.position + Vector3.up * 1.2f + shooter.transform.forward * 0.4f + shooter.transform.right * 0.2f;
-            bool blocked = FirstBlock(shooter.Center, muzzle, shooter, out CrowdActor target, out Vector3 point);
-            if (!blocked) FirstBlock(muzzle, muzzle + (aimPoint - muzzle).normalized * CrowdRules.GUN_RANGE, shooter, out target, out point);
-            if (target != null) DAMAGE.Add(new Damage(target, CrowdRules.GUN_DAMAGE, DEATH_CAUSE.PISTOL));
+            Vector3 point = TracePistolShot(shooter, out Vector3 start, out CrowdActor target);
+            if (target != null) DAMAGE.Add(new Damage(target, CrowdRules.MAX_HP, DEATH_CAUSE.PISTOL));
+            shooter.ShotStart = start;
             shooter.ShotEnd = point;
             shooter.ShotSequence++;
+        }
+
+        public Vector3 GetPistolImpact(CrowdActor shooter) => TracePistolShot(shooter, out _, out _);
+
+        private Vector3 TracePistolShot(CrowdActor shooter, out Vector3 start, out CrowdActor target)
+        {
+            Quaternion rotation = shooter.PistolRotation;
+            Vector3 muzzle = shooter.GetPistolMuzzle(rotation);
+            if (FirstBlock(shooter.Center, muzzle, shooter, out target, out Vector3 point))
+            {
+                start = shooter.Center;
+                return point;
+            }
+
+            start = muzzle;
+            FirstBlock(muzzle, muzzle + rotation * Vector3.forward * CrowdRules.GUN_RANGE, shooter, out target, out point);
+            return point;
         }
 
     }

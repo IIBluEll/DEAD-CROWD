@@ -35,6 +35,7 @@ namespace DeadCrowd.Prototype
             bool seesTarget = CurrentTick >= npc.RecoveryUntilTick && CanSee(npc, npc.RememberedTarget);
             if (npc.Action == ACTION_STATE.MELEE)
             {
+                if (seesTarget) npc.Goal = npc.RememberedTarget.transform.position;
                 npc.LastProgressTick = CurrentTick;
                 npc.ProgressPosition = npc.transform.position;
                 npc.Move(Vector3.zero, 0f, CrowdRules.TURN_SPEED, seesTarget ? CrowdRules.Flat(npc.RememberedTarget.transform.position - npc.transform.position) : Vector3.zero, Runner.DeltaTime);

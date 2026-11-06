@@ -106,10 +106,13 @@ namespace DeadCrowd.Session
             model.ExposureRatio = local.Exposure / 100f;
             model.Exposed = local.Exposed;
             model.Ammo = local.ConfirmedAction == ACTION_STATE.RELOAD ? $"Reloading  {Mathf.Max(0f, (local.ConfirmedActionEndTick - match.CurrentTick) * _runtime.Runner.DeltaTime):0.0}s" : $"Pistol  {local.ConfirmedMagazine} / {local.ConfirmedReserve}";
-            if (!local.Alive) model.Spectator = $"Eliminated - {CauseText(local.DeathCause)}" + (model.Practice ? "" : "\nSpectating survivors - A / D to switch");
+            if (!local.Alive)
+            {
+                model.Spectator = $"Eliminated - {CauseText(local.DeathCause)}";
+                if (_runtime.SpectatedSlot > 0) model.Spectator += $"\nSpectating Slot {_runtime.SpectatedSlot} - A / D to switch";
+            }
             model.ShowCrosshair = local.Alive && _runtime.LocalAim && !model.MenuOpen;
-            float angle = Vector3.Angle(local.transform.forward, Quaternion.Euler(0f, _runtime.AimYaw, 0f) * Vector3.forward);
-            model.Crosshair = local.ConfirmedAction == ACTION_STATE.RELOAD ? "Reloading" : local.ConfirmedMagazine == 0 ? "No Ammo" : angle > CrowdRules.AIM_TOLERANCE ? "Aligning" : "+";
+            model.Crosshair = local.ConfirmedAction == ACTION_STATE.RELOAD ? "Reloading" : local.ConfirmedMagazine == 0 ? "No Ammo" : "+";
         }
 
         private static string CauseText(DEATH_CAUSE cause)
