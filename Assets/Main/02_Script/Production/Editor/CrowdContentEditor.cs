@@ -124,8 +124,9 @@ namespace DeadCrowd.Editor
             EditorSceneManager.OpenScene(ProductionSceneEditor.SCENE_PATH);
             var surface = UnityEngine.Object.FindFirstObjectByType<NavMeshSurface>();
             if (surface == null) throw new InvalidOperationException("Keep a NavMeshSurface on the editable world root.");
+            string path = AssetDatabase.GetAssetPath(surface.navMeshData);
+            if (string.IsNullOrEmpty(path)) path = ROOT + "/" + Path.GetFileNameWithoutExtension(ProductionSceneEditor.SCENE_PATH) + "NavMesh.asset";
             surface.BuildNavMesh();
-            string path = ROOT + "/MainCityNavMesh.asset";
             var saved = AssetDatabase.LoadAssetAtPath<UnityEngine.AI.NavMeshData>(path);
             if (saved == null) AssetDatabase.CreateAsset(surface.navMeshData, path);
             else

@@ -20,7 +20,7 @@ namespace DeadCrowd.Editor
 {
     public static class ProductionSceneEditor
     {
-        public const string SCENE_PATH = "Assets/Main/01_Scene/DeadCrowd.unity";
+        public const string SCENE_PATH = "Assets/Main/01_Scene/InGame.unity";
         private const string PROTOTYPE_PATH = "Assets/Main/01_Scene/DeadCrowdPrototype.unity";
         public const string FONT_PATH = "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset";
         private static readonly Color BACKGROUND = new Color(0.035f, 0.055f, 0.075f, 0.98f);
