@@ -40,6 +40,7 @@ namespace DeadCrowd.Control
             _input.Move = Vector2.zero;
             _input.Aim = false;
             _input.Sprint = false;
+            _input.Interact = false;
             _input.Yaw = Yaw;
             _input.Pitch = Pitch;
             if (local != null && local.Alive && playing && looking && keyboard != null && mouse != null)
@@ -47,6 +48,7 @@ namespace DeadCrowd.Control
                 _input.Move = new Vector2((keyboard.dKey.isPressed ? 1 : 0) - (keyboard.aKey.isPressed ? 1 : 0), (keyboard.wKey.isPressed ? 1 : 0) - (keyboard.sKey.isPressed ? 1 : 0));
                 _input.Aim = mouse.rightButton.isPressed;
                 _input.Sprint = keyboard.leftShiftKey.isPressed;
+                _input.Interact = keyboard.eKey.isPressed;
                 if (mouse.leftButton.wasPressedThisFrame) _input.AttackSequence++;
                 if (keyboard.rKey.wasPressedThisFrame) _input.ReloadSequence++;
             }

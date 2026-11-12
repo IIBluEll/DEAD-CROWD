@@ -7,6 +7,7 @@ namespace DeadCrowd.UI
     public sealed class SessionModel_model
     {
         public SESSION_SCREEN Screen;
+        public bool Korean;
         public bool Busy;
         public bool Host;
         public bool Practice;
@@ -19,6 +20,21 @@ namespace DeadCrowd.UI
         public float HealthRatio;
         public float ExposureRatio;
         public bool Exposed;
+        public bool HasLocalPlayer;
+        public bool LocalAlive;
+        public bool SearchEnabled;
+        public bool Reloading;
+        public int RoundSeconds;
+        public int AliveCount;
+        public int SearchScore;
+        public int LeadSearchScore;
+        public int HealthValue;
+        public int MaxHealth;
+        public int ExposurePercent;
+        public int Magazine;
+        public int Reserve;
+        public float ReloadSeconds;
+        public float SearchProgress = -1f;
         public int Capacity = 2;
         public string Status = "Create a room or join with an invite code.";
         public string Code = "";
@@ -31,5 +47,7 @@ namespace DeadCrowd.UI
         public string Crosshair = "";
         public string Spectator = "";
         public string Result = "";
+
+        public string Text(string english, string korean) => Korean ? korean : english;
     }
 }

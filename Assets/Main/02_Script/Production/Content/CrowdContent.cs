@@ -37,7 +37,8 @@ namespace DeadCrowd.Content
             s_map = UnityEngine.Object.Instantiate(map);
             s_presentation = catalog.Presentation;
             using (SHA256 hash = SHA256.Create())
-                Signature = BitConverter.ToString(hash.ComputeHash(Encoding.UTF8.GetBytes(JsonUtility.ToJson(s_settings) + JsonUtility.ToJson(s_map) + SceneGeometry()))).Replace("-", "");
+                Signature = BitConverter.ToString(hash.ComputeHash(Encoding.UTF8.GetBytes(JsonUtility.ToJson(s_settings) + JsonUtility.ToJson(s_map) + SceneGeometry() +
+                    UnityEngine.Object.FindFirstObjectByType<Prototype.CrowdMatch>()?.SearchLayoutSignature()))).Replace("-", "");
             Debug.Log("[Content] Session rules/map signature=" + Signature + ", map=" + s_map.MapVersion);
         }
 

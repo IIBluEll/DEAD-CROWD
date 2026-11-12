@@ -53,6 +53,10 @@ namespace DeadCrowd.Prototype
         [Networked] public int DeathTick { get; set; }
         [Networked] public DEATH_CAUSE DeathCause { get; set; }
         [Networked] public AI_STATE AiState { get; set; }
+        [Networked] public int SearchScore { get; set; }
+        [Networked] public int SearchSiteId { get; set; }
+        [Networked] public int SearchEndTick { get; set; }
+        internal bool SearchInterrupted { get; set; }
 
         private DeadCrowd.Content.CrowdActorPresentation _presentation;
         private CharacterController _controller;
@@ -148,6 +152,9 @@ namespace DeadCrowd.Prototype
 
         public void ResetRound(Vector3 position, Quaternion rotation)
         {
+            SearchScore = 0;
+            SearchInterrupted = false;
+            CancelSearch();
             Health = CrowdRules.MAX_HP;
             Exposure = 0f;
             Exposed = false;
@@ -241,6 +248,11 @@ namespace DeadCrowd.Prototype
         public void ApplyDamage(int damage, DEATH_CAUSE cause, int tick)
         {
             if (!Alive) return;
+            if (damage > 0 && SearchSiteId != 0)
+            {
+                CancelSearch();
+                SearchInterrupted = true;
+            }
             Health = Mathf.Max(0, Health - damage);
             DamageSequence++;
             if (Health > 0) return;
@@ -250,6 +262,12 @@ namespace DeadCrowd.Prototype
             Aiming = false;
             HitPending = false;
             _controller.enabled = false;
+        }
+
+        internal void CancelSearch()
+        {
+            SearchSiteId = 0;
+            SearchEndTick = 0;
         }
 
         [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]

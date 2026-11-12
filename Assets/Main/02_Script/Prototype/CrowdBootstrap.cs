@@ -33,6 +33,7 @@ namespace DeadCrowd.Prototype
         public string InviteCode => _connection?.InviteCode ?? "";
         public bool MenuOpen => _controls.MenuOpen;
         public bool LocalAim => _controls.Aiming;
+        public float ViewYaw => _controls.Yaw;
         public float MouseSensitivity => _controls.Sensitivity;
         public int SpectatedSlot => CAMERA.SpectatedSlot;
         public Vector2? PistolImpactViewport => CAMERA.PistolImpactViewport;

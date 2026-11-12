@@ -4,28 +4,82 @@
     "unityVersion": "6000.3.20f1",
     "assetSizeDefinition": "Unity BuildReport PackedAssetInfo.packedSize",
     "build": {
-        "buildGuid": "b57c226d3c1f4371b0f5c0cfd380ba52",
+        "buildGuid": "c3ab53f8c06c47e7b9884fed1135ae5e",
         "platform": "StandaloneWindows64",
         "result": "Succeeded",
-        "outputPath": "D:/Fork/DEAD-CROWD/Build/Dead Crowd.exe",
-        "buildStartedAtUtc": "2026-11-02T04:10:39.9920781Z",
-        "buildEndedAtUtc": "2026-11-02T04:11:06.6734018Z",
-        "reportGeneratedAtUtc": "2026-11-02T04:11:06.9292753Z",
-        "buildTimeSeconds": 26.6813237,
-        "reportedOutputSizeBytes": 110902584,
+        "outputPath": "D:/Fork/DEAD-CROWD/Builds/Dead Crowd.exe",
+        "buildStartedAtUtc": "2026-11-12T02:16:11.9970437Z",
+        "buildEndedAtUtc": "2026-11-12T02:16:24.6721641Z",
+        "reportGeneratedAtUtc": "2026-11-12T02:16:24.8942479Z",
+        "buildTimeSeconds": 12.675120399999999,
+        "reportedOutputSizeBytes": 151081576,
         "artifactSizeBytes": 667136,
         "artifactSizeSource": "File",
-        "warningCount": 4,
+        "warningCount": 1,
         "errorCount": 0,
-        "reportedWarningCount": 4,
+        "reportedWarningCount": 1,
         "reportedErrorCount": 0
     },
     "assets": [
+        {
+            "name": "PolygonZombie_Blood_01.tga",
+            "path": "Assets/Main/08_Assets/Synty/PolygonCityZombies/Textures/PolygonZombie_Blood_01.tga",
+            "type": "Texture",
+            "packedSizeBytes": 12583076
+        },
+        {
+            "name": "Zombies.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonCityZombies/Models/Zombies.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 5515200
+        },
         {
             "name": "Built-in Texture2D: Splash Screen Unity Logo",
             "path": "Built-in Texture2D: Splash Screen Unity Logo",
             "type": "Texture",
             "packedSizeBytes": 2796408
+        },
+        {
+            "name": "PolygonZombie_01_Emissive.png",
+            "path": "Assets/Main/08_Assets/Synty/PolygonCityZombies/Textures/Misc/PolygonZombie_01_Emissive.png",
+            "type": "Texture",
+            "packedSizeBytes": 2796384
+        },
+        {
+            "name": "PolygonTown_01_Emissive.png",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Textures/Misc/PolygonTown_01_Emissive.png",
+            "type": "Texture",
+            "packedSizeBytes": 2796380
+        },
+        {
+            "name": "PolygonZombie_01_A.png",
+            "path": "Assets/Main/08_Assets/Synty/PolygonCityZombies/Textures/Alts/PolygonZombie_01_A.png",
+            "type": "Texture",
+            "packedSizeBytes": 2796376
+        },
+        {
+            "name": "PolygonTown_01_C.png",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Textures/Alts/PolygonTown_01_C.png",
+            "type": "Texture",
+            "packedSizeBytes": 2796372
+        },
+        {
+            "name": "PolygonTown_01_A.png",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Textures/Alts/PolygonTown_01_A.png",
+            "type": "Texture",
+            "packedSizeBytes": 2097308
+        },
+        {
+            "name": "SM_Env_Tree_Large_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Tree_Large_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 1407844
+        },
+        {
+            "name": "Window_01_Normals.png",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Textures/Misc/Window_01_Normals.png",
+            "type": "Texture",
+            "packedSizeBytes": 1398288
         },
         {
             "name": "LiberationSans SDF.asset",
@@ -34,10 +88,34 @@
             "packedSizeBytes": 1078492
         },
         {
+            "name": "SM_Veh_Truck_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Vehicles/SM_Veh_Truck_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 736084
+        },
+        {
+            "name": "Window_01.png",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Textures/Misc/Window_01.png",
+            "type": "Texture",
+            "packedSizeBytes": 699216
+        },
+        {
             "name": "unity_builtin_extra",
             "path": "Resources/unity_builtin_extra",
             "type": "Material",
             "packedSizeBytes": 624532
+        },
+        {
+            "name": "SM_Veh_Pickup_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Vehicles/SM_Veh_Pickup_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 442036
+        },
+        {
+            "name": "SM_Veh_Convertable_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Vehicles/SM_Veh_Convertable_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 368732
         },
         {
             "name": "LiberationSans.ttf",
@@ -46,10 +124,22 @@
             "packedSizeBytes": 352734
         },
         {
+            "name": "Road_01_Normals.png",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Textures/Misc/Road_01_Normals.png",
+            "type": "Texture",
+            "packedSizeBytes": 349708
+        },
+        {
             "name": "EmojiOne.png",
             "path": "Assets/TextMesh Pro/Sprites/EmojiOne.png",
             "type": "Texture",
             "packedSizeBytes": 349696
+        },
+        {
+            "name": "SM_Bld_House_Preset_03.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Buildings/SM_Bld_House_Preset_03.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 288320
         },
         {
             "name": "AreaTex.tga",
@@ -118,10 +208,46 @@
             "packedSizeBytes": 262296
         },
         {
+            "name": "SM_Bld_House_Preset_07.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Buildings/SM_Bld_House_Preset_07.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 256172
+        },
+        {
+            "name": "HumanM@Idle02.fbx",
+            "path": "Assets/Main/08_Assets/Kevin Iglesias/Human Animations/Animations/Male/Idles/HumanM@Idle02.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 247376
+        },
+        {
+            "name": "SM_Bld_House_Preset_04.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Buildings/SM_Bld_House_Preset_04.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 240888
+        },
+        {
             "name": "TMP_SDF-Mobile.shader",
             "path": "Assets/TextMesh Pro/Shaders/TMP_SDF-Mobile.shader",
             "type": "Shader",
             "packedSizeBytes": 196216
+        },
+        {
+            "name": "SM_Bld_House_Preset_05.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Buildings/SM_Bld_House_Preset_05.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 193952
+        },
+        {
+            "name": "SM_Generic_Mountains_Grass_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Generic/SM_Generic_Mountains_Grass_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 184812
+        },
+        {
+            "name": "Road_01.png",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Textures/Misc/Road_01.png",
+            "type": "Texture",
+            "packedSizeBytes": 174924
         },
         {
             "name": "Roboto-Regular.ttf",
@@ -136,10 +262,10 @@
             "packedSizeBytes": 168658
         },
         {
-            "name": "Lit.shader",
-            "path": "Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader",
+            "name": "Generic_Basic.shadergraph",
+            "path": "Assets/Main/08_Assets/Synty/PolygonGeneric/Shaders/Generic_Basic.shadergraph",
             "type": "Shader",
-            "packedSizeBytes": 126376
+            "packedSizeBytes": 121672
         },
         {
             "name": "JetBrainsMono-Regular.ttf",
@@ -148,10 +274,28 @@
             "packedSizeBytes": 112602
         },
         {
+            "name": "HumanM@Knockdown01 - Fall.fbx",
+            "path": "Assets/Main/08_Assets/Kevin Iglesias/Human Animations/Animations/Male/Combat/HumanM@Knockdown01 - Fall.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 94068
+        },
+        {
             "name": "UberPost.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/UberPost.shader",
             "type": "Shader",
             "packedSizeBytes": 90416
+        },
+        {
+            "name": "SM_Env_Tree_Tall_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Tree_Tall_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 85436
+        },
+        {
+            "name": "HumanM@Walk01_Forward.fbx",
+            "path": "Assets/Main/08_Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Walk/HumanM@Walk01_Forward.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 82480
         },
         {
             "name": "PerfectDOSVGA437.ttf",
@@ -160,16 +304,46 @@
             "packedSizeBytes": 81602
         },
         {
+            "name": "SM_Bld_Shop_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Buildings/SM_Bld_Shop_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 77208
+        },
+        {
+            "name": "NavMesh-InGame_Map_Settings.asset",
+            "path": "Assets/Main/01_Scene/InGame/NavMesh-InGame_Map_Settings.asset",
+            "type": "Other",
+            "packedSizeBytes": 71896
+        },
+        {
             "name": "VrsTexture.compute",
             "path": "Packages/com.unity.render-pipelines.core/Runtime/Vrs/Shaders/VrsTexture.compute",
             "type": "Shader",
             "packedSizeBytes": 69916
         },
         {
+            "name": "SM_Prop_Fountain_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Props/SM_Prop_Fountain_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 69768
+        },
+        {
+            "name": "SM_Prop_Playground_Swing_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Props/SM_Prop_Playground_Swing_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 69164
+        },
+        {
             "name": "CoreBlit.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/Utils/CoreBlit.shader",
             "type": "Shader",
             "packedSizeBytes": 67312
+        },
+        {
+            "name": "SM_Bld_Shop_02.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Buildings/SM_Bld_Shop_02.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 66156
         },
         {
             "name": "LDR_LLL1_0.png",
@@ -214,6 +388,12 @@
             "packedSizeBytes": 65692
         },
         {
+            "name": "HumanM@Run01_Forward.fbx",
+            "path": "Assets/Main/08_Assets/Kevin Iglesias/Human Animations/Animations/Male/Movement/Run/HumanM@Run01_Forward.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 65116
+        },
+        {
             "name": "DebugUIHandlerRenderingLayerField.prefab",
             "path": "Packages/com.unity.render-pipelines.core/Runtime/Debugging/Prefabs/Widgets/DebugUIHandlerRenderingLayerField.prefab",
             "type": "Prefab",
@@ -226,10 +406,28 @@
             "packedSizeBytes": 60506
         },
         {
-            "name": "WavingGrass.shader",
-            "path": "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/WavingGrass.shader",
+            "name": "Lit.shader",
+            "path": "Packages/com.unity.render-pipelines.universal/Shaders/Lit.shader",
             "type": "Shader",
-            "packedSizeBytes": 57224
+            "packedSizeBytes": 59128
+        },
+        {
+            "name": "Generic_Basic_Bloody.shadergraph",
+            "path": "Assets/Main/08_Assets/Synty/PolygonGeneric/Shaders/Generic_Basic_Bloody.shadergraph",
+            "type": "Shader",
+            "packedSizeBytes": 58116
+        },
+        {
+            "name": "SM_Env_Hedge_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Hedge_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 50984
+        },
+        {
+            "name": "SM_Env_Fence_Wood_Gate_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Fence_Wood_Gate_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 48748
         },
         {
             "name": "NetworkView.prefab",
@@ -238,10 +436,34 @@
             "packedSizeBytes": 48587
         },
         {
-            "name": "WavingGrassBillboard.shader",
-            "path": "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/WavingGrassBillboard.shader",
+            "name": "WavingGrass.shader",
+            "path": "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/WavingGrass.shader",
             "type": "Shader",
-            "packedSizeBytes": 35192
+            "packedSizeBytes": 42472
+        },
+        {
+            "name": "SM_Prop_RubbishBin_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Props/SM_Prop_RubbishBin_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 40820
+        },
+        {
+            "name": "SM_Generic_Mountains_Grass_02.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Generic/SM_Generic_Mountains_Grass_02.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 38964
+        },
+        {
+            "name": "SM_Prop_Playground_Roundabout_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Props/SM_Prop_Playground_Roundabout_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 37656
+        },
+        {
+            "name": "SM_Env_Fence_Wood_Straight_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Fence_Wood_Straight_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 36948
         },
         {
             "name": "ScreenSpaceAmbientOcclusion.shader",
@@ -256,6 +478,12 @@
             "packedSizeBytes": 32533
         },
         {
+            "name": "SM_Prop_ParkBench_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Props/SM_Prop_ParkBench_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 30508
+        },
+        {
             "name": "BokehDepthOfField.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/BokehDepthOfField.shader",
             "type": "Shader",
@@ -268,22 +496,52 @@
             "packedSizeBytes": 27448
         },
         {
+            "name": "SM_Env_Tree_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Tree_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 26304
+        },
+        {
             "name": "FinalPost.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/FinalPost.shader",
             "type": "Shader",
             "packedSizeBytes": 26304
         },
         {
-            "name": "TerrainDetailLit.shader",
-            "path": "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainDetailLit.shader",
+            "name": "WavingGrassBillboard.shader",
+            "path": "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/WavingGrassBillboard.shader",
             "type": "Shader",
-            "packedSizeBytes": 24924
+            "packedSizeBytes": 26136
+        },
+        {
+            "name": "AimRun.anim",
+            "path": "Assets/Main/06_Content/SyntyTown/Animation/AimRun.anim",
+            "type": "Animation",
+            "packedSizeBytes": 25692
+        },
+        {
+            "name": "AimWalk.anim",
+            "path": "Assets/Main/06_Content/SyntyTown/Animation/AimWalk.anim",
+            "type": "Animation",
+            "packedSizeBytes": 25692
         },
         {
             "name": "TemporalAA.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/TemporalAA.shader",
             "type": "Shader",
             "packedSizeBytes": 23404
+        },
+        {
+            "name": "AimIdle.anim",
+            "path": "Assets/Main/06_Content/SyntyTown/Animation/AimIdle.anim",
+            "type": "Animation",
+            "packedSizeBytes": 23200
+        },
+        {
+            "name": "TerrainDetailLit.shader",
+            "path": "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainDetailLit.shader",
+            "type": "Shader",
+            "packedSizeBytes": 22924
         },
         {
             "name": "Bloom.shader",
@@ -298,10 +556,28 @@
             "packedSizeBytes": 21540
         },
         {
+            "name": "SM_Env_Sidewalk_Straight_02.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Sidewalk_Straight_02.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 20020
+        },
+        {
             "name": "CameraMotionBlur.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/PostProcessing/CameraMotionBlur.shader",
             "type": "Shader",
             "packedSizeBytes": 19412
+        },
+        {
+            "name": "SM_Prop_Fountain_Base_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Props/SM_Prop_Fountain_Base_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 19164
+        },
+        {
+            "name": "CommonSyntyZombie.prefab",
+            "path": "Assets/Main/06_Content/SyntyTown/CommonSyntyZombie.prefab",
+            "type": "Prefab",
+            "packedSizeBytes": 19073
         },
         {
             "name": "LensFlareScreenSpace.shader",
@@ -314,6 +590,18 @@
             "path": "Assets/Photon/Fusion/Runtime/Statistics/Icons/StatsMultipeerIcon.png",
             "type": "Texture",
             "packedSizeBytes": 17432
+        },
+        {
+            "name": "SM_Env_Sidewalk_Corner_03.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Sidewalk_Corner_03.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 17396
+        },
+        {
+            "name": "SM_Prop_Playground_Slide_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Props/SM_Prop_Playground_Slide_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 17172
         },
         {
             "name": "StatsArrowIcon.png",
@@ -340,10 +628,22 @@
             "packedSizeBytes": 16256
         },
         {
-            "name": "Built-in Mesh: Combined Mesh (root: scene)",
-            "path": "Built-in Mesh: Combined Mesh (root: scene)",
+            "name": "Rummage.anim",
+            "path": "Assets/Main/06_Content/SyntyTown/Animation/Rummage.anim",
+            "type": "Animation",
+            "packedSizeBytes": 15268
+        },
+        {
+            "name": "SM_Prop_Streetlamp_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Props/SM_Prop_Streetlamp_01.fbx",
             "type": "Mesh",
-            "packedSizeBytes": 15360
+            "packedSizeBytes": 14588
+        },
+        {
+            "name": "SM_Env_Concrete_Base_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Concrete_Base_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 14520
         },
         {
             "name": "SimulationView.prefab",
@@ -358,10 +658,16 @@
             "packedSizeBytes": 13648
         },
         {
-            "name": "MainCityNavMesh.asset",
-            "path": "Assets/Main/06_Content/MainCityNavMesh.asset",
-            "type": "Other",
-            "packedSizeBytes": 12668
+            "name": "Melee.anim",
+            "path": "Assets/Main/06_Content/SyntyTown/Animation/Melee.anim",
+            "type": "Animation",
+            "packedSizeBytes": 13460
+        },
+        {
+            "name": "Shot.anim",
+            "path": "Assets/Main/06_Content/SyntyTown/Animation/Shot.anim",
+            "type": "Animation",
+            "packedSizeBytes": 12872
         },
         {
             "name": "RadialChartIcon.png",
@@ -406,10 +712,28 @@
             "packedSizeBytes": 8408
         },
         {
+            "name": "SM_Prop_RubbishBin_Small_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Props/SM_Prop_RubbishBin_Small_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 8316
+        },
+        {
             "name": "BehaviourView.prefab",
             "path": "Assets/Photon/Fusion/Runtime/Statistics/Prefabs/Pages/BehaviourView.prefab",
             "type": "Prefab",
             "packedSizeBytes": 8303
+        },
+        {
+            "name": "SM_Env_Tree_03.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Tree_03.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 8232
+        },
+        {
+            "name": "SM_Env_Tree_02.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Tree_02.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 8200
         },
         {
             "name": "MemoryView.prefab",
@@ -421,7 +745,7 @@
             "name": "CommonCitizen.prefab",
             "path": "Assets/Main/07_Polish/CommonCitizen.prefab",
             "type": "Prefab",
-            "packedSizeBytes": 7321
+            "packedSizeBytes": 7329
         },
         {
             "name": "NOStats.prefab",
@@ -466,6 +790,12 @@
             "packedSizeBytes": 6124
         },
         {
+            "name": "SM_Env_Sidewalk_Straight_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Sidewalk_Straight_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 5888
+        },
+        {
             "name": "CoreCopy.shader",
             "path": "Packages/com.unity.render-pipelines.core/Shaders/CoreCopy.shader",
             "type": "Shader",
@@ -496,6 +826,12 @@
             "packedSizeBytes": 5020
         },
         {
+            "name": "SM_Env_Grass_02.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Grass_02.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 4664
+        },
+        {
             "name": "CopyDepth.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/Utils/CopyDepth.shader",
             "type": "Shader",
@@ -512,6 +848,12 @@
             "path": "Assets/Photon/Fusion/Runtime/Statistics/ShaderAndMaterial/FusionRadialChartShader.shader",
             "type": "Shader",
             "packedSizeBytes": 4560
+        },
+        {
+            "name": "Reload.anim",
+            "path": "Assets/Main/06_Content/SyntyTown/Animation/Reload.anim",
+            "type": "Animation",
+            "packedSizeBytes": 4544
         },
         {
             "name": "DebugUIIntField.prefab",
@@ -556,10 +898,22 @@
             "packedSizeBytes": 4132
         },
         {
+            "name": "SM_Env_Road_Crossing_02.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Road_Crossing_02.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 4040
+        },
+        {
             "name": "CommonCharacter.prefab",
             "path": "Assets/Main/06_Content/CommonCharacter.prefab",
             "type": "Prefab",
-            "packedSizeBytes": 4028
+            "packedSizeBytes": 4036
+        },
+        {
+            "name": "CommonCharacter.controller",
+            "path": "Assets/Main/06_Content/Animation/CommonCharacter.controller",
+            "type": "Animation",
+            "packedSizeBytes": 3948
         },
         {
             "name": "AimRun.anim",
@@ -590,12 +944,6 @@
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/CameraMotionVectors.shader",
             "type": "Shader",
             "packedSizeBytes": 3832
-        },
-        {
-            "name": "CommonCharacter.controller",
-            "path": "Assets/Main/06_Content/Animation/CommonCharacter.controller",
-            "type": "Animation",
-            "packedSizeBytes": 3764
         },
         {
             "name": "Sampling.shader",
@@ -682,6 +1030,12 @@
             "packedSizeBytes": 3404
         },
         {
+            "name": "FallbackError.shader",
+            "path": "Packages/com.unity.shadergraph/Editor/Resources/Shaders/FallbackError.shader",
+            "type": "Shader",
+            "packedSizeBytes": 3396
+        },
+        {
             "name": "Collapse.wav",
             "path": "Assets/Main/07_Polish/Audio/Collapse.wav",
             "type": "Audio",
@@ -704,6 +1058,12 @@
             "path": "Packages/com.unity.render-pipelines.core/Runtime/RenderPipelineResources/FallbackShader.shader",
             "type": "Shader",
             "packedSizeBytes": 3236
+        },
+        {
+            "name": "SM_Env_Path_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Path_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 3224
         },
         {
             "name": "Melee.anim",
@@ -844,16 +1204,28 @@
             "packedSizeBytes": 2392
         },
         {
+            "name": "Hit.anim",
+            "path": "Assets/Main/06_Content/SyntyTown/Animation/Hit.anim",
+            "type": "Animation",
+            "packedSizeBytes": 2388
+        },
+        {
             "name": "CrowdActor.prefab",
             "path": "Assets/Main/03_Prefab/Prototype/CrowdActor.prefab",
             "type": "Prefab",
-            "packedSizeBytes": 2299
+            "packedSizeBytes": 2335
         },
         {
             "name": "Pistol.wav",
             "path": "Assets/Main/07_Polish/Audio/Pistol.wav",
             "type": "Audio",
             "packedSizeBytes": 2236
+        },
+        {
+            "name": "SM_Env_Road_Parking_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Road_Parking_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 2096
         },
         {
             "name": "DebugUIToggle.prefab",
@@ -868,6 +1240,36 @@
             "packedSizeBytes": 1786
         },
         {
+            "name": "Window_Glass_01_Opaque.mat",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Materials/Misc/Window_Glass_01_Opaque.mat",
+            "type": "Material",
+            "packedSizeBytes": 1732
+        },
+        {
+            "name": "PolygonTown_01_A.mat",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Materials/Alts/PolygonTown_01_A.mat",
+            "type": "Material",
+            "packedSizeBytes": 1724
+        },
+        {
+            "name": "PolygonTown_01_C.mat",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Materials/Alts/PolygonTown_01_C.mat",
+            "type": "Material",
+            "packedSizeBytes": 1724
+        },
+        {
+            "name": "PolygonTown_01_Glass.mat",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Materials/Misc/PolygonTown_01_Glass.mat",
+            "type": "Material",
+            "packedSizeBytes": 1712
+        },
+        {
+            "name": "Vehicle_Glass_01.mat",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Materials/Misc/Vehicle_Glass_01.mat",
+            "type": "Material",
+            "packedSizeBytes": 1708
+        },
+        {
             "name": "LiberationSans SDF - Drop Shadow.mat",
             "path": "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Drop Shadow.mat",
             "type": "Material",
@@ -880,22 +1282,16 @@
             "packedSizeBytes": 1672
         },
         {
+            "name": "Road_01.mat",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Materials/Misc/Road_01.mat",
+            "type": "Material",
+            "packedSizeBytes": 1672
+        },
+        {
             "name": "CommonCharacter.mat",
             "path": "Assets/Main/06_Content/CommonCharacter.mat",
             "type": "Material",
             "packedSizeBytes": 1668
-        },
-        {
-            "name": "Sight Blocker.mat",
-            "path": "Assets/Main/07_Polish/Sight Blocker.mat",
-            "type": "Material",
-            "packedSizeBytes": 1668
-        },
-        {
-            "name": "Buildings.mat",
-            "path": "Assets/Main/04_Material/Prototype/Buildings.mat",
-            "type": "Material",
-            "packedSizeBytes": 1664
         },
         {
             "name": "ShotTrail.mat",
@@ -912,12 +1308,6 @@
         {
             "name": "Slate Shirt.mat",
             "path": "Assets/Main/07_Polish/Slate Shirt.mat",
-            "type": "Material",
-            "packedSizeBytes": 1664
-        },
-        {
-            "name": "Street Iron.mat",
-            "path": "Assets/Main/07_Polish/Street Iron.mat",
             "type": "Material",
             "packedSizeBytes": 1664
         },
@@ -946,38 +1336,8 @@
             "packedSizeBytes": 1660
         },
         {
-            "name": "Facade.mat",
-            "path": "Assets/Main/07_Polish/Facade.mat",
-            "type": "Material",
-            "packedSizeBytes": 1660
-        },
-        {
-            "name": "Stone.mat",
-            "path": "Assets/Main/07_Polish/Stone.mat",
-            "type": "Material",
-            "packedSizeBytes": 1660
-        },
-        {
             "name": "Trim.mat",
             "path": "Assets/Main/04_Material/Prototype/Trim.mat",
-            "type": "Material",
-            "packedSizeBytes": 1656
-        },
-        {
-            "name": "Road.mat",
-            "path": "Assets/Main/07_Polish/Road.mat",
-            "type": "Material",
-            "packedSizeBytes": 1656
-        },
-        {
-            "name": "Roof.mat",
-            "path": "Assets/Main/07_Polish/Roof.mat",
-            "type": "Material",
-            "packedSizeBytes": 1656
-        },
-        {
-            "name": "Sign.mat",
-            "path": "Assets/Main/07_Polish/Sign.mat",
             "type": "Material",
             "packedSizeBytes": 1656
         },
@@ -1012,6 +1372,12 @@
             "packedSizeBytes": 1520
         },
         {
+            "name": "SM_Env_Grass_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Grass_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 1496
+        },
+        {
             "name": "Shot.wav",
             "path": "Assets/Main/06_Content/Audio/Shot.wav",
             "type": "Audio",
@@ -1040,6 +1406,12 @@
             "path": "Packages/com.unity.render-pipelines.core/Runtime/Debugging/Prefabs/Widgets/DebugUIGroup.prefab",
             "type": "Prefab",
             "packedSizeBytes": 1426
+        },
+        {
+            "name": "PolygonZombie_01_A.mat",
+            "path": "Assets/Main/08_Assets/Synty/PolygonCityZombies/Materials/Alts/PolygonZombie_01_A.mat",
+            "type": "Material",
+            "packedSizeBytes": 1372
         },
         {
             "name": "DebugUIButton.prefab",
@@ -1160,6 +1532,12 @@
             "path": "Assets/Main/06_Content/Audio/Reload.wav",
             "type": "Audio",
             "packedSizeBytes": 632
+        },
+        {
+            "name": "SM_Env_Road_01.fbx",
+            "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Road_01.fbx",
+            "type": "Mesh",
+            "packedSizeBytes": 612
         },
         {
             "name": "White1px.png",
@@ -1444,6 +1822,12 @@
             "packedSizeBytes": 360
         },
         {
+            "name": "Zombie.overrideController",
+            "path": "Assets/Main/06_Content/SyntyTown/Animation/Zombie.overrideController",
+            "type": "Animation",
+            "packedSizeBytes": 316
+        },
+        {
             "name": "LineBreaking Following Characters.txt",
             "path": "Assets/TextMesh Pro/Resources/LineBreaking Following Characters.txt",
             "type": "Data",
@@ -1468,8 +1852,20 @@
             "packedSizeBytes": 292
         },
         {
+            "name": "InGameSettings.asset",
+            "path": "Assets/Main/06_Content/InGame/InGameSettings.asset",
+            "type": "Data",
+            "packedSizeBytes": 288
+        },
+        {
             "name": "PresentationProfile.asset",
             "path": "Assets/Main/06_Content/Resources/Crowd/PresentationProfile.asset",
+            "type": "Data",
+            "packedSizeBytes": 288
+        },
+        {
+            "name": "ZombiePresentation.asset",
+            "path": "Assets/Main/06_Content/SyntyTown/ZombiePresentation.asset",
             "type": "Data",
             "packedSizeBytes": 288
         },
@@ -1490,6 +1886,12 @@
             "path": "Assets/Main/07_Polish/CityLayout.asset",
             "type": "Data",
             "packedSizeBytes": 284
+        },
+        {
+            "name": "InGameMap.asset",
+            "path": "Assets/Main/06_Content/InGame/InGameMap.asset",
+            "type": "Data",
+            "packedSizeBytes": 276
         },
         {
             "name": "MapProfile.asset",
@@ -10150,6 +10552,12 @@
             "packedSizeBytes": 120
         },
         {
+            "name": "HumanBasicMotionsDemo.cs",
+            "path": "Assets/Main/08_Assets/Kevin Iglesias/Human Animations/Unity Demo Scenes/Human Basic Motions/Script/HumanBasicMotionsDemo.cs",
+            "type": "Script",
+            "packedSizeBytes": 116
+        },
+        {
             "name": "FusionStatisticsConfig.cs",
             "path": "Assets/Photon/Fusion/Runtime/Statistics/Scripts/FusionStatisticsConfig.cs",
             "type": "Script",
@@ -10554,6 +10962,12 @@
         {
             "name": "CrowdMapAuthoring.cs",
             "path": "Assets/Main/02_Script/Production/Content/CrowdMapAuthoring.cs",
+            "type": "Script",
+            "packedSizeBytes": 112
+        },
+        {
+            "name": "CrowdMatch.Search.cs",
+            "path": "Assets/Main/02_Script/Production/Content/CrowdMatch.Search.cs",
             "type": "Script",
             "packedSizeBytes": 112
         },
@@ -13198,6 +13612,12 @@
             "packedSizeBytes": 100
         },
         {
+            "name": "Generic_SimpleTranslate.cs",
+            "path": "Assets/Main/08_Assets/Synty/PolygonGeneric/Scripts/Generic_SimpleTranslate.cs",
+            "type": "Script",
+            "packedSizeBytes": 100
+        },
+        {
             "name": "Fusion.Unity.cs",
             "path": "Assets/Photon/Fusion/Runtime/Fusion.Unity.cs",
             "type": "Script",
@@ -14314,6 +14734,18 @@
             "packedSizeBytes": 96
         },
         {
+            "name": "SpineProxy.cs",
+            "path": "Assets/Main/08_Assets/Kevin Iglesias/Human Animations/Scripts/SpineProxy.cs",
+            "type": "Script",
+            "packedSizeBytes": 92
+        },
+        {
+            "name": "Generic_SimpleRotate.cs",
+            "path": "Assets/Main/08_Assets/Synty/PolygonGeneric/Scripts/Generic_SimpleRotate.cs",
+            "type": "Script",
+            "packedSizeBytes": 92
+        },
+        {
             "name": "LineChart.cs",
             "path": "Assets/Photon/Fusion/Runtime/Statistics/Scripts/LineChart.cs",
             "type": "Script",
@@ -14866,9 +15298,21 @@
             "packedSizeBytes": 88
         },
         {
+            "name": "InGameCatalog.asset",
+            "path": "Assets/Main/06_Content/InGame/InGameCatalog.asset",
+            "type": "Data",
+            "packedSizeBytes": 84
+        },
+        {
             "name": "ContentCatalog.asset",
             "path": "Assets/Main/06_Content/Resources/Crowd/ContentCatalog.asset",
             "type": "Data",
+            "packedSizeBytes": 84
+        },
+        {
+            "name": "Generic_WaterBob.cs",
+            "path": "Assets/Main/08_Assets/Synty/PolygonGeneric/Scripts/Generic_WaterBob.cs",
+            "type": "Script",
             "packedSizeBytes": 84
         },
         {
@@ -15266,18 +15710,6 @@
         {
             "type": "Warning",
             "message": "Assembly for Assembly Definition File 'Packages/com.hm.codebase/Editor/HM.codebase.Editor.asmdef' will not be compiled, because it has no scripts associated with it."
-        },
-        {
-            "type": "Warning",
-            "message": "Assets\\Main\\02_Script\\Production\\Session\\CrowdConnectionService.cs(321,67): warning CS0618: 'SimulationMessagePtr' is obsolete: 'Not used anymore'"
-        },
-        {
-            "type": "Warning",
-            "message": "Assets\\Main\\02_Script\\Prototype\\CrowdSmokeTest.cs(36,28): warning CS1998: This async method lacks 'await' operators and will run synchronously. Consider using the 'await' operator to await non-blocking API calls, or 'await Task.Run(...)' to do CPU-bound work on a background thread."
-        },
-        {
-            "type": "Warning",
-            "message": "Assets\\Main\\02_Script\\Prototype\\CrowdSmokeTest.cs(14,24): warning CS0414: The field 'CrowdSmokeTest._code' is assigned but its value is never used"
         }
     ]
 }

@@ -21,6 +21,15 @@ namespace DeadCrowd.Prototype
             if (boundary) return;
 
             bool unlocked = actor.Action == ACTION_STATE.NONE;
+            bool wantsSearch = unlocked && input.Interact && input.Move.sqrMagnitude <= 0.0001f && !attack && !reload && !input.Aim;
+            if (authority) UpdateSearchIntent(actor, wantsSearch, input.Interact);
+            if (wantsSearch && actor.SearchSiteId != 0)
+            {
+                actor.Aiming = false;
+                Vector3 towards = CrowdRules.Flat(_searchSiteObjs[actor.SearchSiteId - 1].transform.position - actor.transform.position);
+                actor.Move(Vector3.zero, 0f, CrowdRules.TURN_SPEED, towards, Runner.DeltaTime);
+                return;
+            }
             bool reloadValid = unlocked && reload && actor.Magazine < CrowdRules.MAGAZINE && actor.Reserve > 0;
             bool meleeIntent = unlocked && attack && !input.Aim && !reloadValid;
             actor.Aiming = !reloadValid && (actor.Action == ACTION_STATE.NONE || actor.Action == ACTION_STATE.SHOT) && input.Aim;

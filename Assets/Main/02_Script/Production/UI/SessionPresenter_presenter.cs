@@ -15,8 +15,8 @@ namespace DeadCrowd.UI
         public SessionModel_model Model => MODEL;
 
         public void Configure(CrowdSessionController session, SessionScreen_view view) { _session = session; _view = view; }
-        private void OnEnable() { _view.Requested += OnSessionActioned; }
-        private void OnDisable() { _view.Requested -= OnSessionActioned; }
+        private void OnEnable() { _view.Requested += OnSessionActioned; _view.LanguageChanged += Refresh; }
+        private void OnDisable() { _view.Requested -= OnSessionActioned; _view.LanguageChanged -= Refresh; }
         private void Start() { _view.LoadSettings(_session.Runtime.MouseSensitivity, AudioListener.volume); Refresh(); }
         private void Update()
         {
@@ -29,6 +29,7 @@ namespace DeadCrowd.UI
 
         private void Refresh()
         {
+            MODEL.Korean = _view.Korean;
             _session.ReadModel(MODEL);
             if (_restoreCancelledScreen && !MODEL.Busy && _session.Runtime.Runner == null)
             {

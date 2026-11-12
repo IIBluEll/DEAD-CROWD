@@ -26,6 +26,10 @@ namespace DeadCrowd.Content
         private float _flashUntil;
         private int _damage, _shot, _action;
         private bool _alive;
+        private bool _rummaging;
+        private bool _hasRummageState;
+        private static readonly int RUMMAGE_STATE = Animator.StringToHash("Base Layer.Rummage");
+        private static readonly int LOCOMOTION_STATE = Animator.StringToHash("Base Layer.Locomotion");
         private MaterialPropertyBlock _block;
         private SkinnedMeshRenderer _activeBodyVariant;
         public bool Configured => _bodyAnimator != null && _bodyAnimator.runtimeAnimatorController != null && _bodyRenderers != null &&
@@ -45,6 +49,7 @@ namespace DeadCrowd.Content
             _bodyAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             _bodyAnimator.Rebind();
             _bodyAnimator.Update(0f);
+            _hasRummageState = _bodyAnimator.HasState(0, RUMMAGE_STATE);
             RequireParameter(profile.SpeedParameter, AnimatorControllerParameterType.Float);
             RequireParameter(profile.AimParameter, AnimatorControllerParameterType.Bool);
             RequireParameter(profile.DeadParameter, AnimatorControllerParameterType.Bool);
@@ -70,6 +75,7 @@ namespace DeadCrowd.Content
             _previous = _actor.transform.position;
             _alive = _actor.Alive; _wasExposed = _actor.Exposed; _magazine = _actor.ConfirmedMagazine;
             _damage = _actor.DamageSequence; _shot = _actor.ShotSequence; _action = _actor.ActionSequence;
+            _rummaging = false;
             _bodyAnimator.Rebind(); _bodyAnimator.Update(0f);
             SelectBodyVariant();
         }
@@ -102,6 +108,15 @@ namespace DeadCrowd.Content
             ACTION_STATE action = _actor.IsNpc ? _actor.Action : _actor.ConfirmedAction;
             int endTick = _actor.IsNpc ? _actor.ActionEndTick : _actor.ConfirmedActionEndTick;
             float seconds = action == ACTION_STATE.MELEE ? (_actor.IsNpc ? CrowdRules.AI_CYCLE : CrowdRules.MELEE_CYCLE) : action == ACTION_STATE.SHOT ? CrowdRules.GUN_INTERVAL : CrowdRules.RELOAD_SECONDS;
+            bool rummaging = _hasRummageState && alive && _actor.SearchSiteId != 0 && action == ACTION_STATE.NONE;
+            if (rummaging)
+            {
+                float phase = Mathf.Clamp01(1f - (_actor.SearchEndTick - _actor.Runner.Tick.Raw) * _actor.Runner.DeltaTime / CrowdMatch.SEARCH_SECONDS);
+                _bodyAnimator.Play(RUMMAGE_STATE, 0, phase);
+                _bodyAnimator.Update(0f);
+            }
+            else if (_rummaging && alive && action == ACTION_STATE.NONE) _bodyAnimator.CrossFadeInFixedTime(LOCOMOTION_STATE, 0.12f, 0);
+            _rummaging = rummaging;
             if (alive && action != ACTION_STATE.NONE && seconds > 0f)
             {
                 // Sample the clip using the host timer, including late snapshots and customized action durations.

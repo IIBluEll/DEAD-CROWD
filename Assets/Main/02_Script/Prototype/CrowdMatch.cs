@@ -116,6 +116,7 @@ namespace DeadCrowd.Prototype
         public void ReturnToLobby()
         {
             State = ROUND_STATE.LOBBY;
+            ResetSearchSites();
             SetRoomOpen(true);
             ClearNpcs();
             for (int i = ACTORS.Count - 1; i >= 0; i--)
@@ -153,11 +154,13 @@ namespace DeadCrowd.Prototype
                 if (CurrentTick < CountdownEndTick) return;
                 State = ROUND_STATE.PLAYING;
                 EndTick = CurrentTick + CrowdRules.Ticks(CrowdRules.ROUND_SECONDS, Runner.DeltaTime);
+                ResetSearchSites();
                 Debug.Log($"[Crowd] Round {RoundId} playing. players={RequiredPlayers}, npc={NpcCount()}, seed={Seed}");
             }
 
             DAMAGE.Clear();
             bool boundary = CurrentTick >= EndTick;
+            if (!boundary) RefillSearchSites();
             foreach (CrowdActor actor in ACTORS)
             {
                 if (!actor.Alive) continue;
@@ -187,15 +190,27 @@ namespace DeadCrowd.Prototype
 
             // Every attack sees pre-damage health. Commit damage only after all hit queries.
             foreach (Damage damage in DAMAGE) damage.TARGET.ApplyDamage(damage.AMOUNT, damage.CAUSE, CurrentTick);
+            if (!boundary) SettleSearches();
             AlivePlayers = 0;
             int lastSlot = -1;
+            int highScore = -1;
+            int scoreWinner = 0;
             foreach (CrowdActor actor in ACTORS)
-                if (!actor.IsNpc && actor.Connected && actor.Alive) { AlivePlayers++; lastSlot = actor.Slot; }
+            {
+                if (actor.IsNpc || !actor.Connected || !actor.Alive) continue;
+                AlivePlayers++;
+                lastSlot = actor.Slot;
+                if (actor.SearchScore > highScore) { highScore = actor.SearchScore; scoreWinner = actor.Slot; }
+                else if (actor.SearchScore == highScore) scoreWinner = 0;
+            }
             int result = Practice ? (AlivePlayers == 0 ? -1 : boundary ? -2 : -3) : CrowdRules.ResolveResult(AlivePlayers, lastSlot, boundary);
+            if (result == -2 && !Practice && SearchEnabled && scoreWinner > 0) result = scoreWinner;
             if (result != -3)
             {
                 WinnerSlot = result;
                 State = ROUND_STATE.RESULT;
+                ResetSearchSites();
+                foreach (CrowdActor actor in ACTORS) if (!actor.IsNpc) actor.CancelSearch();
                 foreach (CrowdActor actor in ACTORS) { actor.HitPending = false; actor.Action = ACTION_STATE.NONE; actor.Aiming = false; }
                 Debug.Log($"[Crowd] Result round={RoundId}, winner={result}, alive={AlivePlayers}");
             }
