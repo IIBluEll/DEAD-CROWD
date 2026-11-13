@@ -25,7 +25,7 @@ namespace DeadCrowd.Prototype
     // Initial values from design v1.0, section 17. This is the prototype's single data source.
     public static class CrowdRules
     {
-        public const string BUILD_VERSION = "dead-crowd-development-13";
+        public const string BUILD_VERSION = "dead-crowd-development-14";
         public static int LOAD_TIMEOUT_SECONDS => DeadCrowd.Content.CrowdContent.Settings.LOAD_TIMEOUT_SECONDS;
         public const string CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
         public static int MAX_HP => DeadCrowd.Content.CrowdContent.Settings.MAX_HP;

@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using DeadCrowd.Prototype;
 using DeadCrowd.UI;
 using TMPro;
@@ -70,6 +69,7 @@ internal static class InGameLanguageAuthoring
             rect.sizeDelta = new Vector2(650, 52);
             languageBtn.GetComponentInChildren<TMP_Text>(true).text = "Language   English";
         }
+        languageBtn.GetComponentInChildren<TMP_Text>(true).rectTransform.sizeDelta = new Vector2(620, 48);
         settings.FindProperty("_languageBtn").objectReferenceValue = languageBtn;
         settings.FindProperty("_bilingualFont").objectReferenceValue = font;
         settings.ApplyModifiedPropertiesWithoutUndo();
@@ -82,6 +82,22 @@ internal static class InGameLanguageAuthoring
         {
             label.font = font;
             label.fontSharedMaterial = font.material;
+            if (label.GetComponentInParent<InGameHud_view>(true) != null)
+            {
+                int minSize = label.name switch
+                {
+                    "Clock" or "Alive Count" => 27,
+                    "Your Score" or "Lead Score" or "Exposure Percent" => 20,
+                    "Health Value" or "Objective Label" => 12,
+                    _ => 0
+                };
+                if (minSize > 0 && !label.enableAutoSizing)
+                {
+                    label.fontSizeMax = label.fontSize;
+                    label.fontSizeMin = minSize;
+                    label.enableAutoSizing = true;
+                }
+            }
             EditorUtility.SetDirty(label);
         }
 
@@ -95,6 +111,7 @@ internal static class InGameLanguageAuthoring
         if (!EditorSceneManager.SaveScene(scene)) throw new InvalidOperationException("Could not save InGame.");
 
         VerifyPreview(view, font);
+        Debug.Log($"[InGame language] PASS: {labels.Length} TMP objects, {required.Length} glyphs, both UI locales.");
         File.WriteAllText("Temp/InGameLanguage.result", $"PASS: {labels.Length} TMP objects, {required.Length} glyphs, both UI locales.");
     }
 
@@ -116,7 +133,7 @@ internal static class InGameLanguageAuthoring
                 typeof(SessionScreen_view).GetMethod("ApplyLanguage", INSTANCE_PRIVATE).Invoke(view, null);
                 var model = new SessionModel_model
                 {
-                    Korean = korean, Screen = SESSION_SCREEN.TITLE, SettingsOpen = true,
+                    Korean = korean, Screen = SESSION_SCREEN.TITLE, SettingsOpen = true, MenuOpen = true,
                     HasLocalPlayer = true, LocalAlive = true, SearchEnabled = true, HealthValue = 100, MaxHealth = 100,
                     HealthRatio = 1, AliveCount = 3, RoundSeconds = 252, SearchScore = 4, LeadSearchScore = 6,
                     Reloading = true, ReloadSeconds = 1.5f, ExposurePercent = 42, ExposureRatio = .42f,
@@ -128,11 +145,22 @@ internal static class InGameLanguageAuthoring
                 VerifyText(view, font);
                 model.Screen = SESSION_SCREEN.PLAYING;
                 model.SettingsOpen = false;
+                model.MenuOpen = false;
                 view.Show(model);
                 VerifyText(view, font);
                 string time = korean ? "남은 시간" : "TIME";
                 if (!view.GetComponentsInChildren<TMP_Text>().Any(text => text.text == time))
                     throw new InvalidOperationException("HUD locale label mismatch.");
+                model.ExposurePercent = 100;
+                model.Exposed = true;
+                model.SearchScore = 99;
+                model.LeadSearchScore = 100;
+                model.Reloading = false;
+                model.Magazine = 8;
+                model.Reserve = 24;
+                model.Spectator = korean ? "수색 지점이 다시 활성화되기를 기다리는 중" : "Waiting for supplies to reappear";
+                view.Show(model);
+                VerifyText(view, font);
             }
         }
         finally { UnityEngine.Object.DestroyImmediate(preview); }
@@ -149,7 +177,7 @@ internal static class InGameLanguageAuthoring
                     throw new InvalidOperationException("Unsupported glyph in " + text.text);
             text.ForceMeshUpdate();
             if (text.isTextOverflowing)
-                Debug.LogWarning($"[Language preview] Overflow in {text.transform.parent.name}/{text.name}: {text.text}");
+                throw new InvalidOperationException($"Overflow in {text.transform.parent.name}/{text.name}: {text.text}");
         }
     }
 }

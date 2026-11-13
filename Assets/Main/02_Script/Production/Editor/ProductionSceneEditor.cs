@@ -301,11 +301,11 @@ namespace DeadCrowd.Editor
         {
             CrowdContentEditor.CreateDefaults();
             CrowdContentValidationEditor.ValidateActive();
-            OpenOrCreate(); CrowdContentEditor.InstallMapTools(); SessionUiMigration.Migrate(); InstallSoloPractice(); Verify();
+            OpenOrCreate(); Verify();
             DeadCrowd.Prototype.Editor.CrowdPrototypeEditor.VerifyBackstabRules();
             DeadCrowd.Prototype.Editor.CrowdPrototypeEditor.VerifyExposureRecoveryRules();
             Directory.CreateDirectory("Builds/Development");
-            BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { SCENE_PATH }, locationPathName = "Builds/Development/DEAD-CROWD.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.Development });
+            BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions { scenes = new[] { CrowdConnectionService.MAIN_MENU_SCENE, SCENE_PATH }, locationPathName = "Builds/Development/DEAD-CROWD.exe", target = BuildTarget.StandaloneWindows64, options = BuildOptions.Development });
             if (report.summary.result != BuildResult.Succeeded) throw new InvalidOperationException("Main Scene build failed: " + report.summary.result);
             Debug.Log("[Development] Windows build succeeded.");
         }

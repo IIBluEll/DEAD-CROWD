@@ -17,6 +17,7 @@ namespace DeadCrowd.Prototype
         [Networked] public int CountdownEndTick { get; set; }
         [Networked] public int EndTick { get; set; }
         [Networked] public int WinnerSlot { get; set; }
+        [Networked] public int HostSlot { get; private set; }
         [Networked] public int AlivePlayers { get; set; }
         [Networked] public int Seed { get; set; }
         [Networked] public NetworkBool Practice { get; set; }
@@ -245,6 +246,7 @@ namespace DeadCrowd.Prototype
                 int id = ++_nextId;
                 NetworkObject obj = Runner.Spawn(_actorPrefab, spawn.position, spawn.rotation, player, (_, spawned) => spawned.GetComponent<CrowdActor>().Initialize(id, slot, false));
                 Runner.SetPlayerObject(player, obj);
+                if (player == Runner.LocalPlayer) HostSlot = slot;
                 ResetReady();
                 Debug.Log($"[Crowd] Player joined slot={slot}");
             }

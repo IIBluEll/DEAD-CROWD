@@ -20,7 +20,7 @@ namespace DeadCrowd.Content
         public static string SessionVersion => Prototype.CrowdRules.BUILD_VERSION + ":" + Signature;
 
         private static void Ensure() { if (s_settings == null || s_map == null) Freeze(); }
-        public static void Freeze()
+        public static void Freeze(Prototype.CrowdMatch match = null)
         {
             CrowdMapAuthoring authoring = UnityEngine.Object.FindFirstObjectByType<CrowdMapAuthoring>();
             CrowdContentCatalog catalog = authoring != null && authoring.Catalog != null ? authoring.Catalog : Catalog;
@@ -38,7 +38,7 @@ namespace DeadCrowd.Content
             s_presentation = catalog.Presentation;
             using (SHA256 hash = SHA256.Create())
                 Signature = BitConverter.ToString(hash.ComputeHash(Encoding.UTF8.GetBytes(JsonUtility.ToJson(s_settings) + JsonUtility.ToJson(s_map) + SceneGeometry() +
-                    UnityEngine.Object.FindFirstObjectByType<Prototype.CrowdMatch>()?.SearchLayoutSignature()))).Replace("-", "");
+                    (match != null ? match : UnityEngine.Object.FindFirstObjectByType<Prototype.CrowdMatch>())?.SearchLayoutSignature()))).Replace("-", "");
             Debug.Log("[Content] Session rules/map signature=" + Signature + ", map=" + s_map.MapVersion);
         }
 

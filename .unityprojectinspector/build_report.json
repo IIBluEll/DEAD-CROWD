@@ -4,23 +4,29 @@
     "unityVersion": "6000.3.20f1",
     "assetSizeDefinition": "Unity BuildReport PackedAssetInfo.packedSize",
     "build": {
-        "buildGuid": "c3ab53f8c06c47e7b9884fed1135ae5e",
+        "buildGuid": "8296710d1d564676ba9375a86edb55b6",
         "platform": "StandaloneWindows64",
         "result": "Succeeded",
         "outputPath": "D:/Fork/DEAD-CROWD/Builds/Dead Crowd.exe",
-        "buildStartedAtUtc": "2026-11-12T02:16:11.9970437Z",
-        "buildEndedAtUtc": "2026-11-12T02:16:24.6721641Z",
-        "reportGeneratedAtUtc": "2026-11-12T02:16:24.8942479Z",
-        "buildTimeSeconds": 12.675120399999999,
-        "reportedOutputSizeBytes": 151081576,
+        "buildStartedAtUtc": "2026-11-13T02:38:01.4285272Z",
+        "buildEndedAtUtc": "2026-11-13T02:38:44.8053960Z",
+        "reportGeneratedAtUtc": "2026-11-13T02:38:45.1034441Z",
+        "buildTimeSeconds": 43.3768688,
+        "reportedOutputSizeBytes": 181186611,
         "artifactSizeBytes": 667136,
         "artifactSizeSource": "File",
-        "warningCount": 1,
+        "warningCount": 4,
         "errorCount": 0,
-        "reportedWarningCount": 1,
+        "reportedWarningCount": 4,
         "reportedErrorCount": 0
     },
     "assets": [
+        {
+            "name": "KCC-Ganpan SDF.asset",
+            "path": "Assets/Main/99_ETC/KCC-Ganpan SDF.asset",
+            "type": "Font",
+            "packedSizeBytes": 17708348
+        },
         {
             "name": "PolygonZombie_Blood_01.tga",
             "path": "Assets/Main/08_Assets/Synty/PolygonCityZombies/Textures/PolygonZombie_Blood_01.tga",
@@ -28,10 +34,22 @@
             "packedSizeBytes": 12583076
         },
         {
+            "name": "MainMenuStreet.png",
+            "path": "Assets/Main/05_UI/MainMenuStreet.png",
+            "type": "Texture",
+            "packedSizeBytes": 6293564
+        },
+        {
             "name": "Zombies.fbx",
             "path": "Assets/Main/08_Assets/Synty/PolygonCityZombies/Models/Zombies.fbx",
             "type": "Mesh",
             "packedSizeBytes": 5515200
+        },
+        {
+            "name": "KCC-Ganpan Supplement SDF.asset",
+            "path": "Assets/Main/99_ETC/KCC-Ganpan Supplement SDF.asset",
+            "type": "Font",
+            "packedSizeBytes": 4280440
         },
         {
             "name": "Built-in Texture2D: Splash Screen Unity Logo",
@@ -70,6 +88,12 @@
             "packedSizeBytes": 2097308
         },
         {
+            "name": "DeadCrowdLogo.png",
+            "path": "Assets/Main/05_UI/DeadCrowdLogo.png",
+            "type": "Texture",
+            "packedSizeBytes": 1573020
+        },
+        {
             "name": "SM_Env_Tree_Large_01.fbx",
             "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Tree_Large_01.fbx",
             "type": "Mesh",
@@ -85,7 +109,7 @@
             "name": "LiberationSans SDF.asset",
             "path": "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset",
             "type": "Font",
-            "packedSizeBytes": 1078492
+            "packedSizeBytes": 1078488
         },
         {
             "name": "SM_Veh_Truck_01.fbx",
@@ -670,6 +694,12 @@
             "packedSizeBytes": 12872
         },
         {
+            "name": "TMP_SDF.shader",
+            "path": "Assets/TextMesh Pro/Shaders/TMP_SDF.shader",
+            "type": "Shader",
+            "packedSizeBytes": 12324
+        },
+        {
             "name": "RadialChartIcon.png",
             "path": "Assets/Photon/Fusion/Runtime/Statistics/Icons/RadialChartIcon.png",
             "type": "Texture",
@@ -692,6 +722,12 @@
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/Debug/HDRDebugView.shader",
             "type": "Shader",
             "packedSizeBytes": 9960
+        },
+        {
+            "name": "InGameHudPanel.png",
+            "path": "Assets/Main/05_UI/InGameHudPanel.png",
+            "type": "Texture",
+            "packedSizeBytes": 9936
         },
         {
             "name": "CoreBlitColorAndDepth.shader",
@@ -796,6 +832,12 @@
             "packedSizeBytes": 5888
         },
         {
+            "name": "StreetPistol.wav",
+            "path": "Assets/Main/06_Content/Audio/StreetPistol.wav",
+            "type": "Audio",
+            "packedSizeBytes": 5760
+        },
+        {
             "name": "CoreCopy.shader",
             "path": "Packages/com.unity.render-pipelines.core/Shaders/CoreCopy.shader",
             "type": "Shader",
@@ -823,7 +865,7 @@
             "name": "Reload.wav",
             "path": "Assets/Main/07_Polish/Audio/Reload.wav",
             "type": "Audio",
-            "packedSizeBytes": 5020
+            "packedSizeBytes": 5016
         },
         {
             "name": "SM_Env_Grass_02.fbx",
@@ -842,6 +884,12 @@
             "path": "Packages/com.unity.render-pipelines.core/Runtime/Debugging/Prefabs/Resources/DebugUICanvas.prefab",
             "type": "Prefab",
             "packedSizeBytes": 4630
+        },
+        {
+            "name": "SearchStart.wav",
+            "path": "Assets/Main/06_Content/Audio/SearchStart.wav",
+            "type": "Audio",
+            "packedSizeBytes": 4576
         },
         {
             "name": "FusionRadialChartShader.shader",
@@ -946,6 +994,12 @@
             "packedSizeBytes": 3832
         },
         {
+            "name": "StreetSprintFootstep.wav",
+            "path": "Assets/Main/06_Content/Audio/StreetSprintFootstep.wav",
+            "type": "Audio",
+            "packedSizeBytes": 3720
+        },
+        {
             "name": "Sampling.shader",
             "path": "Packages/com.unity.render-pipelines.universal/Shaders/Utils/Sampling.shader",
             "type": "Shader",
@@ -1039,7 +1093,7 @@
             "name": "Collapse.wav",
             "path": "Assets/Main/07_Polish/Audio/Collapse.wav",
             "type": "Audio",
-            "packedSizeBytes": 3356
+            "packedSizeBytes": 3352
         },
         {
             "name": "LiberationSans SDF - Fallback.asset",
@@ -1082,6 +1136,12 @@
             "path": "Assets/Main/07_Polish/Animation/Reload.anim",
             "type": "Animation",
             "packedSizeBytes": 3116
+        },
+        {
+            "name": "StreetFootstep.wav",
+            "path": "Assets/Main/06_Content/Audio/StreetFootstep.wav",
+            "type": "Audio",
+            "packedSizeBytes": 3108
         },
         {
             "name": "PerformanceTestRunInfo.json",
@@ -1159,7 +1219,7 @@
             "name": "Swing.wav",
             "path": "Assets/Main/07_Polish/Audio/Swing.wav",
             "type": "Audio",
-            "packedSizeBytes": 2588
+            "packedSizeBytes": 2584
         },
         {
             "name": "Hit.anim",
@@ -1198,6 +1258,12 @@
             "packedSizeBytes": 2423
         },
         {
+            "name": "SearchPoint.wav",
+            "path": "Assets/Main/06_Content/Audio/SearchPoint.wav",
+            "type": "Audio",
+            "packedSizeBytes": 2400
+        },
+        {
             "name": "Default Style Sheet.asset",
             "path": "Assets/TextMesh Pro/Resources/Style Sheets/Default Style Sheet.asset",
             "type": "Data",
@@ -1219,13 +1285,19 @@
             "name": "Pistol.wav",
             "path": "Assets/Main/07_Polish/Audio/Pistol.wav",
             "type": "Audio",
-            "packedSizeBytes": 2236
+            "packedSizeBytes": 2232
         },
         {
             "name": "SM_Env_Road_Parking_01.fbx",
             "path": "Assets/Main/08_Assets/Synty/PolygonTown/Models/Environment/SM_Env_Road_Parking_01.fbx",
             "type": "Mesh",
             "packedSizeBytes": 2096
+        },
+        {
+            "name": "00000000000000000000000000000000",
+            "path": "BuiltIn/00000000000000000000000000000000",
+            "type": "Other",
+            "packedSizeBytes": 1911
         },
         {
             "name": "DebugUIToggle.prefab",
@@ -1393,13 +1465,13 @@
             "name": "Footstep.wav",
             "path": "Assets/Main/07_Polish/Audio/Footstep.wav",
             "type": "Audio",
-            "packedSizeBytes": 1436
+            "packedSizeBytes": 1432
         },
         {
             "name": "Impact.wav",
             "path": "Assets/Main/07_Polish/Audio/Impact.wav",
             "type": "Audio",
-            "packedSizeBytes": 1436
+            "packedSizeBytes": 1432
         },
         {
             "name": "DebugUIGroup.prefab",
@@ -1504,12 +1576,6 @@
             "packedSizeBytes": 916
         },
         {
-            "name": "00000000000000000000000000000000",
-            "path": "BuiltIn/00000000000000000000000000000000",
-            "type": "Other",
-            "packedSizeBytes": 890
-        },
-        {
             "name": "UIElement8px.png",
             "path": "Packages/com.unity.render-pipelines.core/Runtime/Debugging/Prefabs/Textures/UIElement8px.png",
             "type": "Texture",
@@ -1555,7 +1621,7 @@
             "name": "LocalWarning.wav",
             "path": "Assets/Main/06_Content/Audio/LocalWarning.wav",
             "type": "Audio",
-            "packedSizeBytes": 512
+            "packedSizeBytes": 508
         },
         {
             "name": "FusionStatisticsDefaultConfig.asset",
@@ -1822,6 +1888,24 @@
             "packedSizeBytes": 360
         },
         {
+            "name": "InGamePresentation.asset",
+            "path": "Assets/Main/06_Content/InGame/InGamePresentation.asset",
+            "type": "Data",
+            "packedSizeBytes": 332
+        },
+        {
+            "name": "PresentationProfile.asset",
+            "path": "Assets/Main/06_Content/Resources/Crowd/PresentationProfile.asset",
+            "type": "Data",
+            "packedSizeBytes": 332
+        },
+        {
+            "name": "RefinedPresentation.asset",
+            "path": "Assets/Main/07_Polish/RefinedPresentation.asset",
+            "type": "Data",
+            "packedSizeBytes": 332
+        },
+        {
             "name": "Zombie.overrideController",
             "path": "Assets/Main/06_Content/SyntyTown/Animation/Zombie.overrideController",
             "type": "Animation",
@@ -1854,24 +1938,6 @@
         {
             "name": "InGameSettings.asset",
             "path": "Assets/Main/06_Content/InGame/InGameSettings.asset",
-            "type": "Data",
-            "packedSizeBytes": 288
-        },
-        {
-            "name": "PresentationProfile.asset",
-            "path": "Assets/Main/06_Content/Resources/Crowd/PresentationProfile.asset",
-            "type": "Data",
-            "packedSizeBytes": 288
-        },
-        {
-            "name": "ZombiePresentation.asset",
-            "path": "Assets/Main/06_Content/SyntyTown/ZombiePresentation.asset",
-            "type": "Data",
-            "packedSizeBytes": 288
-        },
-        {
-            "name": "RefinedPresentation.asset",
-            "path": "Assets/Main/07_Polish/RefinedPresentation.asset",
             "type": "Data",
             "packedSizeBytes": 288
         },
@@ -10972,6 +11038,12 @@
             "packedSizeBytes": 112
         },
         {
+            "name": "CrowdMusicProfile.cs",
+            "path": "Assets/Main/02_Script/Production/Content/CrowdMusicProfile.cs",
+            "type": "Script",
+            "packedSizeBytes": 112
+        },
+        {
             "name": "NetworkCharacterController.cs",
             "path": "Assets/Photon/Fusion/Runtime/NetworkCharacterController.cs",
             "type": "Script",
@@ -13612,6 +13684,12 @@
             "packedSizeBytes": 100
         },
         {
+            "name": "BackgroundMusic.asset",
+            "path": "Assets/Main/06_Content/Audio/BackgroundMusic.asset",
+            "type": "Data",
+            "packedSizeBytes": 100
+        },
+        {
             "name": "Generic_SimpleTranslate.cs",
             "path": "Assets/Main/08_Assets/Synty/PolygonGeneric/Scripts/Generic_SimpleTranslate.cs",
             "type": "Script",
@@ -14016,6 +14094,18 @@
         {
             "name": "CrowdContent.cs",
             "path": "Assets/Main/02_Script/Production/Content/CrowdContent.cs",
+            "type": "Script",
+            "packedSizeBytes": 96
+        },
+        {
+            "name": "InGameHud_view.cs",
+            "path": "Assets/Main/02_Script/Production/UI/InGameHud_view.cs",
+            "type": "Script",
+            "packedSizeBytes": 96
+        },
+        {
+            "name": "SessionLanguage.cs",
+            "path": "Assets/Main/02_Script/Production/UI/SessionLanguage.cs",
             "type": "Script",
             "packedSizeBytes": 96
         },
@@ -15694,12 +15784,6 @@
             "packedSizeBytes": 76
         },
         {
-            "name": "Readme.cs",
-            "path": "Assets/TutorialInfo/Scripts/Readme.cs",
-            "type": "Script",
-            "packedSizeBytes": 68
-        },
-        {
             "name": "PerformanceTestRunSettings.json",
             "path": "Assets/Resources/PerformanceTestRunSettings.json",
             "type": "Data",
@@ -15710,6 +15794,18 @@
         {
             "type": "Warning",
             "message": "Assembly for Assembly Definition File 'Packages/com.hm.codebase/Editor/HM.codebase.Editor.asmdef' will not be compiled, because it has no scripts associated with it."
+        },
+        {
+            "type": "Warning",
+            "message": "Assets\\Main\\02_Script\\Production\\Session\\CrowdConnectionService.cs(496,67): warning CS0618: 'SimulationMessagePtr' is obsolete: 'Not used anymore'"
+        },
+        {
+            "type": "Warning",
+            "message": "Assets\\Main\\02_Script\\Prototype\\CrowdSmokeTest.cs(36,28): warning CS1998: This async method lacks 'await' operators and will run synchronously. Consider using the 'await' operator to await non-blocking API calls, or 'await Task.Run(...)' to do CPU-bound work on a background thread."
+        },
+        {
+            "type": "Warning",
+            "message": "Assets\\Main\\02_Script\\Prototype\\CrowdSmokeTest.cs(14,24): warning CS0414: The field 'CrowdSmokeTest._code' is assigned but its value is never used"
         }
     ]
 }

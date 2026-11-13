@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Fusion;
 using UnityEngine;
+using DeadCrowd.Content;
 using DeadCrowd.Control;
 using DeadCrowd.Session;
 
@@ -11,7 +12,10 @@ namespace DeadCrowd.Prototype
     {
         [SerializeField] private Camera _viewCamera;
         [SerializeField] private bool _showPrototypeGui = true;
+        [SerializeField] private bool _separateMenu;
+        [SerializeField] private CrowdMusicProfile _musicProfile;
         private CrowdConnectionService _connection;
+        private AudioSource _musicSource;
         private readonly CrowdLocalInput _controls = new CrowdLocalInput();
         private readonly CrowdCameraController CAMERA = new CrowdCameraController();
         private NetworkRunner _observedRunner;
@@ -25,6 +29,7 @@ namespace DeadCrowd.Prototype
         private GUIStyle _smallStyle;
         private GUIStyle _reticleStyle;
 
+        public static CrowdBootstrap Instance { get; private set; }
         public CrowdConnectionService Connection => _connection;
         public NetworkRunner Runner => _connection?.Runner;
         public CrowdMatch Match => _connection?.Match;
@@ -55,8 +60,17 @@ namespace DeadCrowd.Prototype
 
         private void Awake()
         {
-            foreach (CrowdBootstrap other in FindObjectsByType<CrowdBootstrap>(FindObjectsSortMode.None))
-                if (other != this && other._primary) { Destroy(gameObject); return; }
+            if (Instance != null && Instance != this)
+            {
+                if (Instance._separateMenu)
+                {
+                    Instance._viewCamera = _viewCamera;
+                    Destroy(this);
+                }
+                else Destroy(gameObject);
+                return;
+            }
+            Instance = this;
             _primary = true;
             _connection = new CrowdConnectionService(ReadInput);
             DontDestroyOnLoad(gameObject);
@@ -64,6 +78,14 @@ namespace DeadCrowd.Prototype
             Application.targetFrameRate = 60;
             _controls.Sensitivity = PlayerPrefs.GetFloat("Crowd.MouseSensitivity", 0.12f);
             AudioListener.volume = PlayerPrefs.GetFloat("Crowd.Volume", 0.8f);
+            if (_musicProfile != null)
+            {
+                _musicSource = gameObject.AddComponent<AudioSource>();
+                _musicSource.playOnAwake = false;
+                _musicSource.loop = true;
+                _musicSource.spatialBlend = 0f;
+                _musicSource.volume = _musicProfile.MusicVolume;
+            }
         }
 
         private void Update()
@@ -78,6 +100,7 @@ namespace DeadCrowd.Prototype
                 _controls.MenuOpen = false;
             }
             CrowdMatch match = Match;
+            UpdateMusic(match);
             CrowdActor local = match != null ? match.LocalActor() : null;
             if (match != null && local != null && match.RoundId != _roundId)
             {
@@ -85,6 +108,16 @@ namespace DeadCrowd.Prototype
                 _controls.Reset(local);
             }
             _controls.Poll(match, local);
+        }
+
+        private void UpdateMusic(CrowdMatch match)
+        {
+            if (_musicSource == null) return;
+            AudioClip clip = _musicProfile.GetClip(match != null ? match.State : null);
+            if (_musicSource.clip == clip) return;
+            _musicSource.Stop();
+            _musicSource.clip = clip;
+            if (clip != null) _musicSource.Play();
         }
 
         private void LateUpdate() { if (_primary) CAMERA.Follow(_viewCamera, Match, _controls); }
@@ -214,6 +247,6 @@ namespace DeadCrowd.Prototype
         private static void DrawPanel(Rect rect) { GUI.Box(rect, GUIContent.none); GUILayout.BeginArea(new Rect(rect.x + 20, rect.y + 16, rect.width - 40, rect.height - 32)); }
 
         private void OnApplicationQuit() { _connection?.Dispose(); }
-        private void OnDestroy() { if (_primary) { _connection?.Dispose(); Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } }
+        private void OnDestroy() { if (_primary) { Instance = null; _connection?.Dispose(); Cursor.lockState = CursorLockMode.None; Cursor.visible = true; } }
     }
 }

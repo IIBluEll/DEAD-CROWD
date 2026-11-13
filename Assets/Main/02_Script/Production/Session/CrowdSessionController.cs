@@ -14,28 +14,18 @@ namespace DeadCrowd.Session
         private readonly StringBuilder SLOT_TEXT = new StringBuilder();
         private static readonly string[] SEARCH_DIRECTIONS = { "Ahead", "Front right", "Right", "Back right", "Behind", "Back left", "Left", "Front left" };
         private static readonly string[] SEARCH_DIRECTIONS_KOREAN = { "정면", "오른쪽 앞", "오른쪽", "오른쪽 뒤", "후방", "왼쪽 뒤", "왼쪽", "왼쪽 앞" };
-        private bool _autoStartPractice;
 
         public CrowdBootstrap Runtime => _runtime;
+        private void Awake() { if (CrowdBootstrap.Instance != null) _runtime = CrowdBootstrap.Instance; }
         public void Configure(CrowdBootstrap runtime) { _runtime = runtime; }
-        public Task CreateRoom_async(int capacity) => _runtime.Connect_async(GameMode.Host, capacity: capacity);
+        public Task CreateRoom_async(int capacity, bool publicRoom) => _runtime.Connection.Connect_async(GameMode.Host, capacity: capacity, publicRoom: publicRoom);
         public Task JoinRoom_async(string code) => _runtime.Connect_async(GameMode.Client, code);
-        public Task StartPractice_async()
-        {
-            _autoStartPractice = true;
-            return _runtime.Connect_async(GameMode.Single);
-        }
-        public Task LeaveRoom_async() { _autoStartPractice = false; return _runtime.Leave_async(); }
-        public void CancelConnection() { _autoStartPractice = false; _runtime.CancelConnection(); }
-        private void Update()
-        {
-            if (!_autoStartPractice || _runtime.Busy) return;
-            CrowdMatch match = _runtime.Match;
-            if (_runtime.Runner == null) { _autoStartPractice = false; return; }
-            if (match == null || !match.Practice || !match.CanStart()) return;
-            _autoStartPractice = false;
-            match.RPC_RequestStart(match.RoundId);
-        }
+        public Task QuickMatch_async(int capacity) => _runtime.Connection.Connect_async(GameMode.AutoHostOrClient, capacity: capacity);
+        public void OpenRoomBrowser() => _runtime.Connection.OpenRoomBrowser();
+        public void CloseRoomBrowser() => _runtime.Connection.CloseRoomBrowser();
+        public Task StartPractice_async() => _runtime.Connection.StartPractice_async();
+        public Task LeaveRoom_async() => _runtime.Leave_async();
+        public void CancelConnection() => _runtime.CancelConnection();
         public void SetMenuOpen(bool open) { _runtime.SetMenuOpen(open); }
         public void Ready()
         {
@@ -48,7 +38,7 @@ namespace DeadCrowd.Session
         {
             CrowdMatch match = _runtime.Match;
             if (match == null || !_runtime.Runner.IsServer || match.State != ROUND_STATE.RESULT) return;
-            _autoStartPractice = match.Practice;
+            if (match.Practice) _runtime.Connection.RequestPracticeStart();
             match.RPC_ReturnToLobby(match.RoundId);
         }
 
@@ -57,17 +47,24 @@ namespace DeadCrowd.Session
             model.Busy = _runtime.Busy;
             model.MenuOpen = _runtime.MenuOpen;
             model.Status = model.Korean ? SessionLanguage.TranslateStatus(_runtime.Status) : _runtime.Status;
+            var connection = _runtime.Connection;
+            model.Rooms = connection.PublicRooms;
+            model.RoomListReady = connection.ReceivedRoomList;
+            model.RoomListFailed = connection.ShowRoomBrowser && connection.State == CONNECTION_STATE.IDLE && !connection.ReceivedRoomList;
             CrowdMatch match = _runtime.Match;
             model.Practice = match != null && match.Practice;
             if (match == null || model.Busy)
             {
                 if (_runtime.Runner == null && !model.Busy && model.Capacity == 1) model.Capacity = 2;
-                if (model.Busy || _runtime.Runner != null) model.Screen = SESSION_SCREEN.CONNECTING;
+                if (model.Busy && !connection.StoppingRoomBrowser) model.Screen = SESSION_SCREEN.CONNECTING;
+                else if (connection.ShowRoomBrowser) model.Screen = SESSION_SCREEN.PUBLIC_ROOMS;
+                else if (_runtime.Runner != null && !connection.StoppingRoomBrowser) model.Screen = SESSION_SCREEN.CONNECTING;
                 else if (model.Screen != SESSION_SCREEN.TITLE && model.Screen != SESSION_SCREEN.CREATE && model.Screen != SESSION_SCREEN.JOIN) model.Screen = SESSION_SCREEN.TITLE;
                 return;
             }
             model.Screen = match.State == ROUND_STATE.LOADING ? SESSION_SCREEN.LOADING : match.State == ROUND_STATE.LOBBY ? SESSION_SCREEN.LOBBY : match.State == ROUND_STATE.COUNTDOWN ? SESSION_SCREEN.COUNTDOWN : match.State == ROUND_STATE.RESULT ? SESSION_SCREEN.RESULT : SESSION_SCREEN.PLAYING;
             model.Host = _runtime.Runner.IsServer;
+            model.PublicSession = connection.PublicSession;
             model.Code = _runtime.InviteCode;
             model.Capacity = match.RequiredPlayers;
             model.CanStart = model.Host && match.CanStart();
@@ -75,10 +72,15 @@ namespace DeadCrowd.Session
             model.CanReady = !model.Practice && local != null && !model.Busy && match.State == ROUND_STATE.LOBBY;
             model.Ready = local != null && local.Ready;
             SLOT_TEXT.Clear();
+            model.ConnectedPlayers = 0;
             for (int slot = 1; slot <= match.RequiredPlayers; slot++)
             {
                 CrowdActor participant = null;
                 foreach (CrowdActor actor in match.Actors) if (!actor.IsNpc && actor.Connected && actor.Slot == slot) { participant = actor; break; }
+                model.Participants[slot - 1] = participant == null ? default :
+                    new LobbyParticipant(true, participant.Ready, participant.LoadedRoundId == match.RoundId,
+                        participant == local, !match.Practice && slot == match.HostSlot);
+                if (participant != null) model.ConnectedPlayers++;
                 SLOT_TEXT.Append(model.Text("Slot ", "플레이어 ")).Append(slot).Append("    ");
                 if (participant == null) SLOT_TEXT.Append(model.Text("Waiting for Player", "참가 대기 중"));
                 else SLOT_TEXT.Append(match.State == ROUND_STATE.LOADING ? (participant.LoadedRoundId == match.RoundId ? model.Text("Loaded", "불러오기 완료") : model.Text("Loading...", "불러오는 중")) : participant.Ready ? model.Text("Ready", "준비 완료") : model.Text("Not Ready", "준비 전")).Append(participant == local ? model.Text("  (You)", "  (나)") : "");

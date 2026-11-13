@@ -18,13 +18,15 @@ namespace DeadCrowd.Content
         private int _roundId;
         private CrowdPresentationProfile _profile;
         private AudioSource _audio;
-        private AudioSource _warningAudio;
+        private AudioSource _shotAudio;
+        private AudioSource _localAudio;
         private bool _wasExposed;
         private int _magazine;
         private Vector3 _previous;
         private float _distance;
         private float _flashUntil;
         private int _damage, _shot, _action;
+        private int _searchSite, _searchScore;
         private bool _alive;
         private bool _rummaging;
         private bool _hasRummageState;
@@ -42,9 +44,7 @@ namespace DeadCrowd.Content
             if (_orientPistolToAim && _weaponObj != null) _pistolRestRotation = _weaponObj.transform.localRotation;
             _damage = actor.DamageSequence; _shot = actor.ShotSequence; _action = actor.ActionSequence; _alive = actor.Alive;
             _block = new MaterialPropertyBlock();
-            _audio = gameObject.AddComponent<AudioSource>();
-            _audio.spatialBlend = 1f; _audio.rolloffMode = AudioRolloffMode.Linear;
-            _audio.minDistance = 1f; _audio.maxDistance = profile.AudioRange;
+            _audio = CreateAudioSource(profile.AudioRange);
             _bodyAnimator.applyRootMotion = false;
             _bodyAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             _bodyAnimator.Rebind();
@@ -57,8 +57,8 @@ namespace DeadCrowd.Content
             if (!string.IsNullOrWhiteSpace(profile.HitParameter)) RequireParameter(profile.HitParameter, AnimatorControllerParameterType.Trigger);
             foreach (string state in new[] { profile.MeleeState, profile.ShotState, profile.ReloadState })
                 if (!_bodyAnimator.HasState(0, Animator.StringToHash(state)) && !_bodyAnimator.HasState(0, Animator.StringToHash(_bodyAnimator.GetLayerName(0) + "." + state))) throw new System.InvalidOperationException("Missing base-layer Animator state: " + state);
-            _warningAudio = gameObject.AddComponent<AudioSource>(); _warningAudio.spatialBlend = 0f;
             _wasExposed = actor.Exposed; _magazine = actor.ConfirmedMagazine;
+            _searchSite = actor.SearchSiteId; _searchScore = actor.SearchScore;
             SelectBodyVariant();
         }
 
@@ -75,6 +75,10 @@ namespace DeadCrowd.Content
             _previous = _actor.transform.position;
             _alive = _actor.Alive; _wasExposed = _actor.Exposed; _magazine = _actor.ConfirmedMagazine;
             _damage = _actor.DamageSequence; _shot = _actor.ShotSequence; _action = _actor.ActionSequence;
+            _searchSite = _actor.SearchSiteId; _searchScore = _actor.SearchScore;
+            _audio.Stop();
+            if (_shotAudio != null) _shotAudio.Stop();
+            if (_localAudio != null) _localAudio.Stop();
             _rummaging = false;
             _bodyAnimator.Rebind(); _bodyAnimator.Update(0f);
             SelectBodyVariant();
@@ -90,13 +94,80 @@ namespace DeadCrowd.Content
                 variant.gameObject.SetActive(variant == _activeBodyVariant);
         }
 
-        private void Play(AudioClip clip) { if (clip != null) _audio.PlayOneShot(clip, _profile.Volume); }
+        private AudioSource CreateAudioSource(float range)
+        {
+            AudioSource source = gameObject.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.dopplerLevel = 0f;
+            source.spatialBlend = range > 0f ? 1f : 0f;
+            source.rolloffMode = AudioRolloffMode.Linear;
+            source.minDistance = Mathf.Min(1f, range);
+            source.maxDistance = Mathf.Max(1f, range);
+            return source;
+        }
+
+        private void Play(AudioClip clip, float gain = 1f)
+        {
+            if (clip != null) _audio.PlayOneShot(clip, _profile.Volume * gain);
+        }
+
+        private void PlayShot()
+        {
+            if (_profile.Shot == null) return;
+            if (_profile.ShotAudioRange <= 0f) { Play(_profile.Shot); return; }
+            if (_shotAudio == null)
+            {
+                _shotAudio = CreateAudioSource(_profile.ShotAudioRange);
+                _shotAudio.priority = 64;
+            }
+            _shotAudio.PlayOneShot(_profile.Shot, _profile.Volume);
+        }
+
+        private void PlayLocal(AudioClip clip)
+        {
+            if (clip == null) return;
+            if (_localAudio == null)
+            {
+                _localAudio = CreateAudioSource(0f);
+                _localAudio.priority = 32;
+            }
+            _localAudio.PlayOneShot(clip, _profile.Volume);
+        }
+
+        private void UpdateFootsteps(bool alive, Vector3 displacement)
+        {
+            if (!alive || _match == null || _match.State != ROUND_STATE.PLAYING || displacement.sqrMagnitude >= 0.25f)
+            {
+                _distance = 0f;
+                return;
+            }
+
+            float moved = CrowdRules.Flat(displacement).magnitude;
+            _distance += moved;
+            if (_distance < _profile.FootstepDistance) return;
+            _distance -= _profile.FootstepDistance;
+            bool sprinting = moved > (CrowdRules.WALK_SPEED + CrowdRules.SPRINT_SPEED) * 0.5f * Time.deltaTime;
+            AudioClip clip = sprinting && _profile.SprintFootstep != null ? _profile.SprintFootstep : _profile.Footstep;
+            Play(clip, _profile.FootstepVolume);
+        }
+
+        private void UpdateSearchSounds()
+        {
+            int searchSite = _actor.SearchSiteId;
+            int searchScore = _actor.SearchScore;
+            if (searchSite != 0 && searchSite != _searchSite) Play(_profile.SearchStart);
+            if (_actor.HasInputAuthority && searchScore > _searchScore) PlayLocal(_profile.SearchPoint);
+            _searchSite = searchSite;
+            _searchScore = searchScore;
+        }
+
         private void LateUpdate()
         {
             if (_actor == null || _actor.Object == null || !_actor.Object.IsValid) return;
             if (_match != null && _roundId != _match.RoundId) ResetPresentation();
             bool alive = _actor.Alive;
-            float moved = Vector3.Distance(_actor.transform.position, _previous);
+            Vector3 displacement = _actor.transform.position - _previous;
+            float moved = displacement.magnitude;
             _previous = _actor.transform.position;
             float speed = Time.deltaTime > 0f ? Mathf.Clamp(moved / Time.deltaTime, 0f, CrowdRules.SPRINT_SPEED) : 0f;
             _bodyAnimator.SetFloat(_profile.SpeedParameter, alive ? speed : 0f, 0.12f, Time.deltaTime);
@@ -146,9 +217,10 @@ namespace DeadCrowd.Content
             }
             if (_weaponObj != null) _weaponObj.SetActive(alive && (_actor.Aiming || _actor.Action == ACTION_STATE.SHOT || _actor.Action == ACTION_STATE.RELOAD));
             if (_meleeWeaponObj != null) _meleeWeaponObj.SetActive(alive && _actor.Action == ACTION_STATE.MELEE);
-            if (alive && moved < 0.5f) { _distance += moved; if (_distance >= _profile.FootstepDistance) { _distance = 0f; Play(_profile.Footstep); } }
+            UpdateFootsteps(alive, displacement);
+            UpdateSearchSounds();
             if (_damage != _actor.DamageSequence) { _damage = _actor.DamageSequence; _flashUntil = Time.time + _profile.HitFlashSeconds; if (!string.IsNullOrWhiteSpace(_profile.HitParameter)) _bodyAnimator.SetTrigger(_profile.HitParameter); Play(_profile.Hit); }
-            if (_shot != _actor.ShotSequence) { _shot = _actor.ShotSequence; Play(_profile.Shot); }
+            if (_shot != _actor.ShotSequence) { _shot = _actor.ShotSequence; PlayShot(); }
             if (_action != _actor.ActionSequence)
             {
                 _action = _actor.ActionSequence;
@@ -156,8 +228,8 @@ namespace DeadCrowd.Content
                 if (_actor.ActionEvent == ACTION_STATE.RELOAD) Play(_profile.Reload);
             }
             if (_alive && !alive) Play(_profile.Death);
-            if (_actor.HasInputAuthority && _profile.PlayLocalWarnings && _profile.LocalWarning != null &&
-                (!_wasExposed && _actor.Exposed || _magazine > 0 && _actor.ConfirmedMagazine == 0)) _warningAudio.PlayOneShot(_profile.LocalWarning, _profile.Volume);
+            if (_actor.HasInputAuthority && _profile.PlayLocalWarnings &&
+                (!_wasExposed && _actor.Exposed || _magazine > 0 && _actor.ConfirmedMagazine == 0)) PlayLocal(_profile.LocalWarning);
             _wasExposed = _actor.Exposed; _magazine = _actor.ConfirmedMagazine;
             _alive = alive;
             bool flashing = Time.time < _flashUntil;

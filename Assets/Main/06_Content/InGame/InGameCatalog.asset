@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DeadCrowd.Content.CrowdContentCatalog
   GameSettings: {fileID: 11400000, guid: 7b4a65a4d3d5e2446bd9158330955bfb, type: 2}
   Map: {fileID: 11400000, guid: 9b0d2616b8fabf747868818c6e3efd84, type: 2}
-  Presentation: {fileID: 11400000, guid: f19f48483f31b5d4eb24bdcb2b886633, type: 2}
+  Presentation: {fileID: 11400000, guid: a174aa1517004f1f8e7f4f05bc789e74, type: 2}

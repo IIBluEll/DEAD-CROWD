@@ -125,9 +125,14 @@ namespace DeadCrowd.Editor
             var scene = EditorSceneManager.OpenScene(ProductionSceneEditor.SCENE_PATH);
             SessionScreen_view view = UnityEngine.Object.FindFirstObjectByType<SessionScreen_view>();
             if (view == null) throw new InvalidOperationException("Main Scene has no session view.");
+            var savedView = new SerializedObject(view);
+            if (savedView.FindProperty("_bilingualFont").objectReferenceValue != null)
+            {
+                VerifyText(view);
+                return;
+            }
             TMP_FontAsset font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ProductionSceneEditor.FONT_PATH);
             if (font == null) throw new InvalidOperationException("TMP LiberationSans SDF font asset is required.");
-            var savedView = new SerializedObject(view);
             var bindings = new List<SessionActionBinding>();
             SerializedProperty savedBindings = savedView.FindProperty("_bindings");
             for (int i = 0; i < savedBindings.arraySize; i++)
@@ -223,9 +228,9 @@ namespace DeadCrowd.Editor
                 if (text.font == null || text.font.atlasTexture == null || text.font.material == null) throw new InvalidOperationException("Missing embedded SDF font: " + text.name);
                 foreach (char character in text.text)
                     // TMP_InputField uses a zero-width space as its empty-input caret sentinel.
-                    if (character != '\u200B' && !char.IsWhiteSpace(character) && (!text.font.HasCharacter(character) || character > 127)) throw new InvalidOperationException("Unsupported UI character in " + text.name + ": " + character);
+                    if (character != '\u200B' && !char.IsWhiteSpace(character) && !text.font.HasCharacter(character, true)) throw new InvalidOperationException("Unsupported UI character in " + text.name + ": " + character);
             }
-            Debug.Log($"[TMP Migration] PASS: {texts.Length} English TMP texts, embedded font atlases and TMP input viewport.");
+            Debug.Log($"[TMP Migration] PASS: {texts.Length} TMP texts, embedded font atlases and TMP input viewport.");
         }
     }
 }
